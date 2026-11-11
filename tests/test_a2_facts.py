@@ -58,3 +58,19 @@ def test_a2_the_facts_say_what_happened_with_pseudonymous_ids() -> None:
     assert any(line.startswith("Rule VIP raised this case:") for line in vip)
     burst = next(lines for case, lines in facts.items() if case.startswith("S-023/"))
     assert any(re.search(r"opened the charts of \d+ different patients", line) for line in burst)
+
+
+def test_a2_the_facts_say_same_address_whenever_the_rule_does() -> None:
+    from dataclasses import replace
+
+    from record_access_audit.core.records import Address
+    from tests.support.clinic import BEN, DOCTOR, at, clinic, opened
+
+    spaced = replace(BEN, address=Address("1  staff way", "Example City", "00010"))
+    c = clinic(patients=(spaced,), accesses=(opened(DOCTOR, spaced, at(10)),))
+    flags = flag(c, DEFAULT_RULES)
+    assert "SAME_ADDRESS" in {f.code.value for f in flags}
+    key = next(iter(group(flags)))
+    assert f"Patient {spaced.id} lives at {DOCTOR.id}'s home address." in case_facts(
+        c, DEFAULT_RULES, key, flags
+    )

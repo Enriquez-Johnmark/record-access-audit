@@ -11,7 +11,7 @@ from zoneinfo import ZoneInfo
 from record_access_audit.core.accounting import Index, last_care_ended, reasons
 from record_access_audit.core.cases import CaseKey
 from record_access_audit.core.records import CLINIC_TIME_ZONE, Access, AccessKind, Clinic
-from record_access_audit.core.rules import DESCRIPTIONS, Flag, RuleCode, RuleSet
+from record_access_audit.core.rules import DESCRIPTIONS, Flag, RuleCode, RuleSet, same_address
 
 TZ = ZoneInfo(CLINIC_TIME_ZONE)
 MAX_LOOKS = 10
@@ -65,7 +65,7 @@ def _pair_facts(clinic: Clinic, index: Index, staff: str, patient_id: str, looks
         and clinic.facts.staff_records.get(staff) != patient_id
     ):
         facts.append(f"Patient {patient_id} shares {staff}'s last name.")
-    if patient.address == person.address and clinic.facts.staff_records.get(staff) != patient_id:
+    if same_address(patient.address, person.address) and clinic.facts.staff_records.get(staff) != patient_id:
         facts.append(f"Patient {patient_id} lives at {staff}'s home address.")
     if patient.deceased_at is not None and looks and patient.deceased_at < looks[0].at:
         facts.append(

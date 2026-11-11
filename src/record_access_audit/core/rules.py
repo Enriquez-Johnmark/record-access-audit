@@ -9,7 +9,16 @@ from enum import StrEnum
 from typing import TYPE_CHECKING
 from zoneinfo import ZoneInfo
 
-from record_access_audit.core.records import CLINIC_TIME_ZONE, AccessKind, Clinic, Patient, Role, Shift, Staff
+from record_access_audit.core.records import (
+    CLINIC_TIME_ZONE,
+    AccessKind,
+    Address,
+    Clinic,
+    Patient,
+    Role,
+    Shift,
+    Staff,
+)
 
 if TYPE_CHECKING:
     from record_access_audit.core.accounting import Index
@@ -117,8 +126,13 @@ def _minutes_outside(shift: Shift, at: datetime) -> float:
     return min((start - clock) % day, (clock - end) % day)
 
 
-def _same_address(a: str, b: str) -> bool:
-    return " ".join(a.lower().split()) == " ".join(b.lower().split())
+def same_address(a: Address, b: Address) -> bool:
+    """The same home, ignoring case and spacing; used by the rule and the facts alike."""
+
+    def norm(text: str) -> str:
+        return " ".join(text.lower().split())
+
+    return norm(a.line) == norm(b.line) and a.postal_code == b.postal_code
 
 
 def _codes(
@@ -143,9 +157,7 @@ def _codes(
     fired.append(RuleCode.NO_RELATIONSHIP)
     if patient.family.lower() == person.family.lower():
         fired.append(RuleCode.SAME_LAST_NAME)
-    if _same_address(patient.address.line, person.address.line) and (
-        patient.address.postal_code == person.address.postal_code
-    ):
+    if same_address(patient.address, person.address):
         fired.append(RuleCode.SAME_ADDRESS)
     if patient.id in owners:
         fired.append(RuleCode.COWORKER)
