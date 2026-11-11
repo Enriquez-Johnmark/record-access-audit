@@ -43,8 +43,10 @@ jobs:
         run: for _ in $(seq 1 90); do curl -sf "$FHIR_URL/metadata" >/dev/null && break; sleep 2; done
       - run: uv run pytest --junitxml=test-results.xml
       # A3: no real company outside the research, and every FHIR file marked as test data.
-      - run: uv run check-made-up
+      - if: ${{ !cancelled() }}
+        run: uv run check-made-up
       - name: Evidence pack
+        if: ${{ !cancelled() }}
         run: uv run record-access-audit evidence --results test-results.xml --commit "$GITHUB_SHA" --out evidence.html
       - uses: actions/upload-artifact@v4
         if: always()

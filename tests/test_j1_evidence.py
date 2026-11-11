@@ -20,9 +20,9 @@ def test_j1_links_each_criterion_to_its_passing_tests_by_the_tests_name() -> Non
         SPEC,
         ARCHITECTURE,
         [
-            Outcome("tests/test_a1.py::test_a1_the_data_is_the_same_every_time", True),
-            Outcome("tests/test_a2.py::test_a2_no_name_reaches_the_model", True),
-            Outcome("tests/test_a2.py::test_a21_is_not_a2", False),
+            Outcome("tests/test_a1.py::test_a1_the_data_is_the_same_every_time", "passed"),
+            Outcome("tests/test_a2.py::test_a2_no_name_reaches_the_model", "passed"),
+            Outcome("tests/test_a2.py::test_a21_is_not_a2", "failed"),
         ],
     )
     assert [(row.id, row.status) for row in evidence] == [
@@ -35,7 +35,7 @@ def test_j1_links_each_criterion_to_its_passing_tests_by_the_tests_name() -> Non
 
 
 def test_j1_a_finished_milestones_criterion_with_no_passing_test_is_a_gap() -> None:
-    evidence = build(SPEC, ARCHITECTURE, [Outcome("t.py::test_a1_the_data", False)])
+    evidence = build(SPEC, ARCHITECTURE, [Outcome("t.py::test_a1_the_data", "failed")])
     assert gaps(evidence) == ["A1 (M1): a test failed", "A2 (M1): no test"]
 
 
@@ -56,7 +56,26 @@ def test_j1_reads_pytests_junit_results(tmp_path: Path) -> None:
         "</testsuite></testsuites>"
     )
     assert outcomes(xml) == [
-        Outcome("tests.test_a1::test_a1_ok", True),
-        Outcome("tests.test_a1::test_a1_bad", False),
-        Outcome("tests.test_a1::test_a1_skipped", False),
+        Outcome("tests.test_a1::test_a1_ok", "passed"),
+        Outcome("tests.test_a1::test_a1_bad", "failed"),
+        Outcome("tests.test_a1::test_a1_skipped", "skipped"),
     ]
+
+
+def test_j1_a_skipped_test_neither_proves_nor_fails_a_criterion() -> None:
+    evidence = build(
+        SPEC,
+        ARCHITECTURE,
+        [
+            Outcome("t.py::test_a1_needs_hapi", "skipped"),
+            Outcome("t.py::test_a2_ok", "passed"),
+            Outcome("t.py::test_a2_needs_hapi", "skipped"),
+            Outcome("t.py::test_b1_needs_hapi", "skipped"),
+        ],
+    )
+    assert [(row.id, row.status) for row in evidence] == [
+        ("A1", "missing"),
+        ("A2", "proven"),
+        ("B1", "not yet due"),
+    ]
+    assert gaps(evidence) == ["A1 (M1): no test"]

@@ -10,12 +10,17 @@ from typing import Literal
 from xml.etree import ElementTree
 
 Status = Literal["proven", "failing", "missing", "not yet due"]
+Result = Literal["passed", "failed", "skipped"]
 
 
 @dataclass(frozen=True)
 class Outcome:
     name: str
-    passed: bool
+    result: Result
+
+    @property
+    def passed(self) -> bool:
+        return self.result == "passed"
 
 
 @dataclass(frozen=True)
@@ -58,15 +63,16 @@ def _expand(listed: str) -> list[str]:
 
 
 def outcomes(junit_xml: Path) -> list[Outcome]:
-    """Every test in pytest's JUnit results; skipped counts as not passed."""
+    """Every test in pytest's JUnit results."""
     tree = ElementTree.parse(junit_xml)  # noqa: S314 (our own test run's file)
-    return [
-        Outcome(
-            f"{case.get('classname', '')}::{case.get('name', '')}",
-            not any(child.tag in ("failure", "error", "skipped") for child in case),
+    found: list[Outcome] = []
+    for case in tree.iter("testcase"):
+        tags = {child.tag for child in case}
+        result: Result = (
+            "failed" if tags & {"failure", "error"} else "skipped" if "skipped" in tags else "passed"
         )
-        for case in tree.iter("testcase")
-    ]
+        found.append(Outcome(f"{case.get('classname', '')}::{case.get('name', '')}", result))
+    return found
 
 
 def build(spec: str, architecture: str, results: list[Outcome]) -> list[Row]:
@@ -75,9 +81,10 @@ def build(spec: str, architecture: str, results: list[Outcome]) -> list[Row]:
     for criterion, text in criteria(spec):
         milestone = next((m for m in plan if criterion in m.ids), None)
         prefix = f"test_{criterion.lower()}_"
-        own = [t for t in results if t.name.split("::")[-1].startswith(prefix)]
+        # A skipped test neither proves nor fails a criterion.
+        own = [t for t in results if t.name.split("::")[-1].startswith(prefix) and t.result != "skipped"]
         status: Status
-        if any(not t.passed for t in own):
+        if any(t.result == "failed" for t in own):
             status = "failing"
         elif milestone is None or not milestone.done:
             status = "not yet due"
