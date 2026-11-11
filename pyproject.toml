@@ -46,6 +46,8 @@ ignore = ["S101"]
 
 [tool.ruff.lint.per-file-ignores]
 "src/record_access_audit/clock.py" = ["TID251"]
+# Ranges in the architecture use an en dash (B1–B5); the HTML template has long lines.
+"src/record_access_audit/evidence.py" = ["RUF001", "RUF002", "E501"]
 
 [tool.pyright]
 include = ["src", "tests"]
