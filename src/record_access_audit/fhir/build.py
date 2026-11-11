@@ -4,6 +4,7 @@ and `PractitionerRole`, patients, their `CareTeam`s, `Encounter`s and
 `PatientRead` (a chart opened) or `PatientQuery` (a search list). Every
 resource is marked as test data and tagged with the clinic."""
 
+import re
 from datetime import date, datetime
 from typing import Any
 
@@ -47,9 +48,12 @@ def fhir_id(our_id: str) -> str:
 
 
 def our_id(resource_id: str, prefix: str) -> str:
-    """`evc-s001` -> `S-001`, given the ID's letters (`S`, `P`, `A`, `E`, `AP`)."""
-    digits = resource_id.removeprefix("evc-")[len(prefix) :]
-    return f"{prefix}-{digits}"
+    """`evc-s001` -> `S-001`, given the ID's letters (`S`, `P`, `A`, `E`, `AP`).
+    Anything not shaped exactly like one of our IDs is a ValueError."""
+    match = re.fullmatch(rf"evc-{prefix.lower()}(\d+)", resource_id)
+    if match is None:
+        raise ValueError(f"not one of our {prefix} IDs: {resource_id}")
+    return f"{prefix}-{match[1]}"
 
 
 def _meta() -> dict[str, Any]:

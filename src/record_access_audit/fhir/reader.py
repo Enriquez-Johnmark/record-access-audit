@@ -4,10 +4,10 @@ the others are taken in. Nothing from the server is trusted until parsed."""
 
 from dataclasses import dataclass
 from datetime import date, datetime, time
-from typing import Any, Literal
+from typing import Annotated, Any
 from zoneinfo import ZoneInfo
 
-from pydantic import BaseModel, ConfigDict, ValidationError
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, ValidationError
 
 from record_access_audit.core.records import (
     CLINIC_TIME_ZONE,
@@ -43,9 +43,30 @@ class ReadResult:
     refused: list[Refused]
 
 
+def _fhir_datetime(value: Any) -> datetime:
+    if not isinstance(value, str):
+        raise ValueError("expected a FHIR dateTime string")
+    return datetime.fromisoformat(value)
+
+
+def _fhir_date(value: Any) -> date:
+    if not isinstance(value, str):
+        raise ValueError("expected a FHIR date string")
+    return date.fromisoformat(value)
+
+
+FhirDateTime = Annotated[datetime, BeforeValidator(_fhir_datetime)]
+FhirDate = Annotated[date, BeforeValidator(_fhir_date)]
+
+
 class _Strict(BaseModel):
-    # FHIR servers add fields (meta.versionId, text...); only what we read is checked.
-    model_config = ConfigDict(extra="ignore", frozen=True)
+    # Strict: a number is never read as a time, nor 1 as true. FHIR servers add
+    # fields (meta.versionId, text...); only what we read is checked.
+    model_config = ConfigDict(extra="ignore", frozen=True, strict=True)
+
+
+# A list that must hold at least one item.
+type NonEmpty[T] = Annotated[list[T], Field(min_length=1)]
 
 
 class _Reference(_Strict):
@@ -54,11 +75,11 @@ class _Reference(_Strict):
 
 class _HumanName(_Strict):
     family: str
-    given: list[str]
+    given: NonEmpty[str]
 
 
 class _Address(_Strict):
-    line: list[str]
+    line: NonEmpty[str]
     city: str
     postalCode: str  # noqa: N815 (FHIR's name)
 
@@ -69,32 +90,32 @@ class _Coding(_Strict):
 
 
 class _Concept(_Strict):
-    coding: list[_Coding]
+    coding: NonEmpty[_Coding]
 
 
 class _Practitioner(_Strict):
     id: str
-    name: list[_HumanName]
-    address: list[_Address]
+    name: NonEmpty[_HumanName]
+    address: NonEmpty[_Address]
 
 
 class _PractitionerRole(_Strict):
     practitioner: _Reference
-    code: list[_Concept]
-    specialty: list[_Concept]
+    code: NonEmpty[_Concept]
+    specialty: NonEmpty[_Concept]
 
 
 class _Patient(_Strict):
     id: str
-    name: list[_HumanName]
-    birthDate: date  # noqa: N815
-    address: list[_Address]
-    deceasedDateTime: datetime | None = None  # noqa: N815
+    name: NonEmpty[_HumanName]
+    birthDate: FhirDate  # noqa: N815
+    address: NonEmpty[_Address]
+    deceasedDateTime: FhirDateTime | None = None  # noqa: N815
 
 
 class _Period(_Strict):
-    start: datetime
-    end: datetime | None = None
+    start: FhirDateTime
+    end: FhirDateTime | None = None
 
 
 class _Participant(_Strict):
@@ -104,7 +125,7 @@ class _Participant(_Strict):
 
 class _CareTeam(_Strict):
     subject: _Reference
-    participant: list[_Participant]
+    participant: NonEmpty[_Participant]
 
 
 class _EncounterParticipant(_Strict):
@@ -114,7 +135,7 @@ class _EncounterParticipant(_Strict):
 class _Encounter(_Strict):
     id: str
     subject: _Reference
-    participant: list[_EncounterParticipant]
+    participant: NonEmpty[_EncounterParticipant]
     period: _Period
 
 
@@ -124,9 +145,9 @@ class _AppointmentParticipant(_Strict):
 
 class _Appointment(_Strict):
     id: str
-    start: datetime
-    end: datetime
-    participant: list[_AppointmentParticipant]
+    start: FhirDateTime
+    end: FhirDateTime
+    participant: NonEmpty[_AppointmentParticipant]
 
 
 class _Detail(_Strict):
@@ -145,16 +166,16 @@ class _Network(_Strict):
 
 class _Agent(_Strict):
     who: _Reference
-    requestor: Literal[True]
+    requestor: bool
     network: _Network
 
 
 class _AuditEvent(_Strict):
     id: str
-    subtype: list[_Coding]
-    recorded: datetime
-    agent: list[_Agent]
-    entity: list[_Entity]
+    subtype: NonEmpty[_Coding]
+    recorded: FhirDateTime
+    agent: NonEmpty[_Agent]
+    entity: NonEmpty[_Entity]
 
 
 class _UnreadableError(Exception):
@@ -184,8 +205,11 @@ def _target(reference: _Reference, kind: str, known: set[str], what: str) -> str
     prefix = f"{kind}/"
     if not reference.reference.startswith(prefix):
         raise _UnreadableError(f"expected a {kind} reference ({reference.reference})")
-    letter = "S" if kind == "Practitioner" else "P"
-    our = our_id(reference.reference.removeprefix(prefix), letter)
+    letter, whose = ("S", "staff") if kind == "Practitioner" else ("P", "patient")
+    try:
+        our = our_id(reference.reference.removeprefix(prefix), letter)
+    except ValueError:
+        raise _UnreadableError(f"not one of the clinic's {whose} IDs ({reference.reference})") from None
     if our not in known:
         raise _UnreadableError(f"names {what} not in the clinic ({reference.reference})")
     return our
@@ -218,21 +242,35 @@ def read(resources: dict[str, list[dict[str, Any]]], facts: ClinicFacts) -> Read
             refused.append(Refused(f"{kind}/{raw.get('id', '?')}", str(problem)))
             return None
 
-    practitioner_ids = {our_id(str(p.get("id", "")), "S") for p in resources.get("Practitioner", [])}
+    def own_id(resource_id: str, letter: str, kind: str) -> str:
+        try:
+            return our_id(resource_id, letter)
+        except ValueError:
+            raise _UnreadableError(f"not one of the clinic's IDs ({kind}/{resource_id})") from None
+
+    practitioner_ids: set[str] = set()
+    for raw in resources.get("Practitioner", []):
+        try:
+            practitioner_ids.add(our_id(str(raw.get("id", "")), "S"))
+        except ValueError:
+            continue
     roles: dict[str, _PractitionerRole] = {}
     for raw, r in each("PractitionerRole", _PractitionerRole):
 
         def owner_of(r: _PractitionerRole = r) -> str:
-            return _target(r.practitioner, "Practitioner", practitioner_ids, "staff")
+            owner = _target(r.practitioner, "Practitioner", practitioner_ids, "staff")
+            if owner in roles:
+                raise _UnreadableError(f"a second PractitionerRole for {r.practitioner.reference}")
+            return owner
 
         owner = taking("PractitionerRole", raw, owner_of)
         if owner is not None:
             roles[owner] = r
     staff: list[Staff] = []
     for raw, p in each("Practitioner", _Practitioner):
-        staff_id = our_id(p.id, "S")
 
-        def make_staff(p: _Practitioner = p, staff_id: str = staff_id) -> Staff:
+        def make_staff(p: _Practitioner = p) -> Staff:
+            staff_id = own_id(p.id, "S", "Practitioner")
             role = roles.get(staff_id)
             if role is None:
                 raise _UnreadableError("no PractitionerRole")
@@ -250,17 +288,22 @@ def read(resources: dict[str, list[dict[str, Any]]], facts: ClinicFacts) -> Read
             staff.append(made)
     staff_ids = {s.id for s in staff}
 
-    patients = [
-        Patient(
-            our_id(p.id, "P"),
-            p.name[0].given[0],
-            p.name[0].family,
-            p.birthDate,
-            _address(p.address),
-            _local(p.deceasedDateTime) if p.deceasedDateTime else None,
-        )
-        for _, p in each("Patient", _Patient)
-    ]
+    patients: list[Patient] = []
+    for raw, p in each("Patient", _Patient):
+
+        def make_patient(p: _Patient = p) -> Patient:
+            return Patient(
+                own_id(p.id, "P", "Patient"),
+                p.name[0].given[0],
+                p.name[0].family,
+                p.birthDate,
+                _address(p.address),
+                _local(p.deceasedDateTime) if p.deceasedDateTime else None,
+            )
+
+        made = taking("Patient", raw, make_patient)
+        if made is not None:
+            patients.append(made)
     patient_ids = {p.id for p in patients}
 
     care_teams: list[CareTeamMember] = []
@@ -287,7 +330,7 @@ def read(resources: dict[str, list[dict[str, Any]]], facts: ClinicFacts) -> Read
             if e.period.end is None:
                 raise _UnreadableError("an encounter with no end")
             return Encounter(
-                our_id(e.id, "E"),
+                own_id(e.id, "E", "Encounter"),
                 _target(e.subject, "Patient", patient_ids, "a patient"),
                 tuple(_target(x.individual, "Practitioner", staff_ids, "staff") for x in e.participant),
                 _local(e.period.start),
@@ -308,7 +351,7 @@ def read(resources: dict[str, list[dict[str, Any]]], facts: ClinicFacts) -> Read
             if patient is None or doctor is None:
                 raise _UnreadableError("an appointment without a patient and a staff member")
             return Appointment(
-                our_id(a.id, "AP"),
+                own_id(a.id, "AP", "Appointment"),
                 _target(patient, "Patient", patient_ids, "a patient"),
                 _target(doctor, "Practitioner", staff_ids, "staff"),
                 _local(a.start),
@@ -327,6 +370,8 @@ def read(resources: dict[str, list[dict[str, Any]]], facts: ClinicFacts) -> Read
             if code not in ("read", "search-type"):
                 raise _UnreadableError(f"not a chart read or a patient search ({code})")
             agent = event.agent[0]
+            if not agent.requestor:
+                raise _UnreadableError("the agent is not the one who asked")
             who = _target(agent.who, "Practitioner", staff_ids, "staff")
             shown = tuple(_target(x.what, "Patient", patient_ids, "a patient") for x in event.entity)
             if not shown:
@@ -344,7 +389,7 @@ def read(resources: dict[str, list[dict[str, Any]]], facts: ClinicFacts) -> Read
                 except (KeyError, ValueError):
                     raise _UnreadableError("a chart read without its section and seconds") from None
             return Access(
-                our_id(event.id, "A"),
+                own_id(event.id, "A", "AuditEvent"),
                 who,
                 _local(event.recorded),
                 AccessKind.CHART if chart else AccessKind.SEARCH,
