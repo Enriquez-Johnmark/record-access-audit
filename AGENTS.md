@@ -13,10 +13,10 @@ Each gate needs the owner's explicit "yes"; an approval for one phase never carr
 | 1. Research | done (2026-11-11, `docs/research/README.md`) |
 | 2. Brief | done, approved 2026-11-11 under the standing approval (`docs/product/brief.md`) |
 | 3. Spec & acceptance criteria | done, approved 2026-11-11 under the standing approval (`docs/product/spec.md`, 34 criteria) |
-| 4. Architecture | not started |
-| 5. Build | not started |
+| 4. Architecture | done, approved 2026-11-11 under the standing approval (`docs/architecture.md`) |
+| 5. Build | **in progress**, approved 2026-11-11: M1 (data and FHIR) next |
 
-**No application code exists or gets written until the build is approved.**
+Code follows the build order in `docs/architecture.md`, one milestone at a time; each ends with a code review and an evidence page.
 
 ## Owner decisions
 
@@ -35,8 +35,14 @@ Research claims carry a source (URL, publisher, date) and a confidence (H/M/L). 
 - **No compliance claims.** The README never says "HIPAA compliant" or "certified".
 - **Language:** Python, with React pages (decided 2026-11-10).
 - **Report test results only from commands actually run.**
+- **Tests:** test first (one criterion's test, see it fail, then make it pass); every acceptance criterion has a test whose name starts with its ID, e.g. `test_b3_a_search_list_hit_never_raises_a_case`.
+- **Time:** read only through the injected `Clock` (`clock.py`); ruff bans direct system-clock calls elsewhere.
+- **The model never sees who anyone is.** Requests carry only numbered facts with pseudonymous IDs; no name, address, date of birth or clinical content.
+- **React:** read the `vercel-react-best-practices`, `vercel-composition-patterns`, `shadcn`, `frontend-design`, `web-design-guidelines` and `ui-taste` skills before writing or reviewing the React app.
 - **Small commits** on `main`, each one change; messages imperative; no AI attribution trailers such as "Co-Authored-By" (owner's choice). Commits are signed with the owner's SSH key, so GitHub shows them as verified.
 
 ## Working here
+
+- **Before every commit:** `uv run ruff format --check .`, `uv run ruff check .`, `uv run pyright` and `uv run pytest` pass, and for changes under `web/`, `pnpm --dir web lint`, `typecheck`, `test` and `build` too.
 
 - **Cloud sessions:** `scripts/cloud-session-start.sh` runs at session start (via `.claude/settings.json`) and sets up commit signing.
