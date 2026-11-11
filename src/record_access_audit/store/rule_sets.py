@@ -127,3 +127,13 @@ def change_rules(db: Db, clock: Clock, user: "User", rules: RuleSet) -> RuleSet:
     if user.role != "privacy officer":
         raise RuleSetError("only the privacy officer can change the rules")
     return add_version(db, clock, user.email, rules)
+
+
+def settings_of(rules: RuleSet) -> dict[str, Any]:
+    """A rule set's thresholds and weights, as the rules page shows them."""
+    return _settings(rules)
+
+
+def from_settings(settings: dict[str, Any]) -> RuleSet:
+    """A rule set from the rules page; checked again when saved."""
+    return _rules(0, settings)

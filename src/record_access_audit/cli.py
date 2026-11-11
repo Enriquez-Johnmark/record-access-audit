@@ -7,12 +7,14 @@ import sys
 from pathlib import Path
 
 from record_access_audit import evidence
+from record_access_audit.api.app import AppConfig, create_app
 from record_access_audit.audit_run import fetch_and_run
 from record_access_audit.clock import SystemClock
 from record_access_audit.fhir.client import FhirServer
 from record_access_audit.fhir.reader import facts_from_json
 from record_access_audit.made_up.generate import generate
 from record_access_audit.made_up.load import load
+from record_access_audit.mail import MailpitMailer
 from record_access_audit.model.client import (
     OWNER_KEY,
     ClaudeSummariser,
@@ -21,7 +23,8 @@ from record_access_audit.model.client import (
     Summariser,
 )
 from record_access_audit.model.request import MODEL
-from record_access_audit.store.db import connect, migrate
+from record_access_audit.people import add_user
+from record_access_audit.store.db import connect, database_url, migrate
 from record_access_audit.summaries import summarise_open
 
 # The clinic facts with no FHIR home, found from the package so any directory works.
@@ -30,6 +33,22 @@ FACTS_FILE = Path(__file__).resolve().parents[2] / "demo" / "clinic.json"
 
 def _fhir_url(given: str | None) -> str:
     return given or os.environ.get("FHIR_URL", "http://127.0.0.1:8090/fhir")
+
+
+def serve(recorded: bool) -> None:
+    import uvicorn
+
+    base_url = os.environ.get("PUBLIC_BASE_URL", "http://127.0.0.1:8000")
+    host, _, port = os.environ.get("BIND_ADDR", "127.0.0.1:8000").rpartition(":")
+    config = AppConfig(
+        database_url=database_url(),
+        base_url=base_url,
+        facts=facts_from_json(json.loads(FACTS_FILE.read_text())),
+        fhir_url=_fhir_url(None),
+    )
+    mailer = MailpitMailer(os.environ.get("MAILPIT_URL", "http://127.0.0.1:8025"))
+    app = create_app(config, mailer=mailer, model=choose_model(recorded, record=False))
+    uvicorn.run(app, host=host, port=int(port), log_level="warning")
 
 
 def choose_model(recorded: bool, record: bool) -> Summariser | None:
@@ -53,6 +72,16 @@ def main(argv: list[str] | None = None) -> None:
     commands.add_parser("migrate", help="apply the database migrations")
     running = commands.add_parser("run", help="read the access log from the FHIR server and run the rules")
     running.add_argument("--url")
+
+    adding = commands.add_parser("add-user", help="add the privacy officer or the administrator")
+    adding.add_argument("--email", required=True)
+    adding.add_argument("--name", required=True)
+    adding.add_argument("--role", required=True, choices=["privacy officer", "administrator"])
+
+    serving = commands.add_parser("serve", help="serve the pages and the API")
+    serving.add_argument(
+        "--recorded", action="store_true", help="summarise from recorded answers: no key, no cost"
+    )
 
     summarising = commands.add_parser("summarise", help="write a summary for every open case without one")
     how = summarising.add_mutually_exclusive_group()
@@ -86,6 +115,12 @@ def main(argv: list[str] | None = None) -> None:
             f"{result.new_accesses} new accesses; "
             f"{result.run.flags} new flags in {result.run.cases} new cases"
         )
+    elif args.command == "add-user":
+        with connect() as db:
+            user = add_user(db, args.email, args.name, args.role)
+        print(f"{user.role}: {user.email}")
+    elif args.command == "serve":
+        serve(args.recorded)
     elif args.command == "summarise":
         facts = facts_from_json(json.loads(FACTS_FILE.read_text()))
         with connect() as db:
