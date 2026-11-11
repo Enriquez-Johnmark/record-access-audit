@@ -91,3 +91,53 @@ def test_h1_logging_out_ends_the_session(db: Db, db_url: str) -> None:
     log_in(client, mail, OFFICER_EMAIL)
     assert client.post("/api/logout").status_code == 204
     assert client.get("/api/me").status_code == 401
+
+
+class BrokenMail:
+    def send(self, to: str, subject: str, body: str) -> None:
+        raise RuntimeError("the mail server is down")
+
+
+def test_h1_the_link_is_sent_after_the_answer_so_a_mail_failure_changes_nothing(db: Db, db_url: str) -> None:
+    from fastapi.testclient import TestClient
+
+    from record_access_audit.api.app import AppConfig, create_app
+
+    clock = stored(db)
+    officer_and_admin(db)
+    config = AppConfig(
+        database_url=db_url, base_url="http://testserver", facts=FACTS, fhir_url="http://127.0.0.1:8090/fhir"
+    )
+    client = TestClient(create_app(config, clock=clock, mailer=BrokenMail()), base_url="http://testserver")
+    assert client.post("/api/login", json={"email": OFFICER_EMAIL}).status_code == 204
+    assert client.post("/api/login", json={"email": "nobody@example.test"}).status_code == 204
+
+
+def test_h1_deciding_a_case_that_does_not_exist_is_not_found(db: Db, db_url: str) -> None:
+    clock = stored(db)
+    officer_and_admin(db)
+    client, mail = api(db_url, clock)
+    log_in(client, mail, OFFICER_EMAIL)
+    missing = client.post(
+        "/api/cases/999999/decisions", json={"outcome": "appropriate", "reason": "Checked and fine."}
+    )
+    assert missing.status_code == 404
+
+
+def test_h1_an_unreachable_fhir_server_is_named_when_the_log_is_read(db: Db, db_url: str) -> None:
+    from fastapi.testclient import TestClient
+
+    from record_access_audit.api.app import AppConfig, create_app
+    from tests.support.api import KeptMail
+
+    clock = stored(db)
+    officer_and_admin(db)
+    mail = KeptMail()
+    config = AppConfig(
+        database_url=db_url, base_url="http://testserver", facts=FACTS, fhir_url="http://127.0.0.1:9/fhir"
+    )
+    client = TestClient(create_app(config, clock=clock, mailer=mail), base_url="http://testserver")
+    log_in(client, mail, ADMIN_EMAIL)
+    run = client.post("/api/run")
+    assert run.status_code == 502
+    assert "FHIR server" in run.json()["detail"]

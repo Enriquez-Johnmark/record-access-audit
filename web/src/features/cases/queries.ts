@@ -22,6 +22,10 @@ export function useCase(id: number) {
   return useQuery({
     queryKey: caseKeys.detail(id),
     queryFn: () => api<CaseDetail>("GET", `/api/cases/${id}`),
+    // Each fetch is logged as the case being opened, so a case is fetched when
+    // opened (or changed), not again on every return to the window.
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000,
   })
 }
 

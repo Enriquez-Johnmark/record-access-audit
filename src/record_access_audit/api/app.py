@@ -2,14 +2,15 @@
 the login links (H1). Every staff route checks the role; every change must
 come from this site. The React app is served from `web/dist`."""
 
-import contextlib
-from collections.abc import Awaitable, Callable, Iterator
+import logging
+from collections.abc import AsyncGenerator, Awaitable, Callable, Iterator
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Annotated, Any, cast
 from urllib.parse import urlparse
 
-from fastapi import Depends, FastAPI, HTTPException, Request, Response
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Request, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -19,13 +20,21 @@ from pydantic import BaseModel, ConfigDict
 
 from record_access_audit.activity import activity, timeline
 from record_access_audit.audit_run import fetch_and_run
-from record_access_audit.auth import SESSION_HOURS, Session, end_session, request_link, session_of, use_link
+from record_access_audit.auth import (
+    SESSION_HOURS,
+    Mail,
+    Session,
+    end_session,
+    request_link,
+    session_of,
+    use_link,
+)
 from record_access_audit.case_view import view_case
 from record_access_audit.clock import Clock, SystemClock
 from record_access_audit.core.records import ClinicFacts, Department, Role
 from record_access_audit.core.rules import DESCRIPTIONS, RuleCode
-from record_access_audit.decisions import LABELS, DecisionError, decide
-from record_access_audit.fhir.client import FhirServer
+from record_access_audit.decisions import LABELS, DecisionError, NoSuchCaseError, decide
+from record_access_audit.fhir.client import FhirError, FhirServer
 from record_access_audit.mail import Mailer
 from record_access_audit.model.client import Summariser
 from record_access_audit.people import User, user_by_id
@@ -140,7 +149,15 @@ def create_app(
     )
     origin = urlparse(config.base_url)
     secure = origin.scheme == "https"
-    app = FastAPI(title="Record Access Audit", docs_url=None, redoc_url=None, openapi_url=None)
+
+    @asynccontextmanager
+    async def lifespan(_: FastAPI) -> AsyncGenerator[None]:
+        yield
+        pool.close()
+
+    app = FastAPI(
+        title="Record Access Audit", docs_url=None, redoc_url=None, openapi_url=None, lifespan=lifespan
+    )
     app.state.audit = _State(config, clock, mailer, model, pool)
 
     @app.middleware("http")
@@ -164,10 +181,12 @@ def create_app(
         return {"status": "ok"}
 
     @app.post("/api/login", status_code=204)
-    def login(body: LoginBody, db: DbDep) -> Response:
-        # A mail failure must not reveal whether the address is known.
-        with contextlib.suppress(Exception):
-            request_link(db, clock, mailer or _no_mail, body.email, config.base_url)
+    def login(body: LoginBody, db: DbDep, background: BackgroundTasks) -> Response:
+        mail = request_link(db, clock, body.email, config.base_url)
+        if mail is not None:
+            # Sent after answering, so a known address answers as quickly as an
+            # unknown one, and a mail failure changes nothing anyone can see.
+            background.add_task(_send, mailer or _no_mail, mail)
         return Response(status_code=204)
 
     @app.post("/api/login/{token}")
@@ -254,6 +273,8 @@ def create_app(
     def record_decision(case_id: int, body: DecisionBody, user: OfficerDep, db: DbDep) -> dict[str, Any]:
         try:
             made = decide(db, clock, user, case_id, body.outcome, body.reason)
+        except NoSuchCaseError:
+            raise HTTPException(404, "no such case") from None
         except DecisionError as error:
             raise HTTPException(400, str(error)) from None
         return cast(dict[str, Any], jsonable_encoder(made))
@@ -290,7 +311,10 @@ def create_app(
 
     @app.post("/api/run")
     def run(user: AdminDep, db: DbDep) -> dict[str, Any]:
-        result = fetch_and_run(db, clock, FhirServer(config.fhir_url), config.facts, actor=user.email)
+        try:
+            result = fetch_and_run(db, clock, FhirServer(config.fhir_url), config.facts, actor=user.email)
+        except FhirError as error:
+            raise HTTPException(502, f"The record system's FHIR server couldn't be read: {error}") from None
         summaries = summarise_open(db, clock, model, config.facts, actor=user.email)
         return {
             "new_accesses": result.new_accesses,
@@ -316,6 +340,13 @@ def create_app(
             return FileResponse(WEB / "index.html")
 
     return app
+
+
+def _send(mailer: Mailer, mail: Mail) -> None:
+    try:
+        mailer.send(mail.to, mail.subject, mail.body)
+    except Exception as error:  # logged, never shown: it would reveal the address is known
+        logging.getLogger(__name__).warning("sending a login link failed: %s", type(error).__name__)
 
 
 class _NoMail:

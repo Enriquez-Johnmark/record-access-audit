@@ -27,6 +27,10 @@ class DecisionError(ValueError):
     pass
 
 
+class NoSuchCaseError(DecisionError):
+    pass
+
+
 @dataclass(frozen=True)
 class Decision:
     id: int
@@ -53,7 +57,7 @@ def decide(db: Db, clock: Clock, user: User, case_id: int, outcome: str, reason:
     now = clock.now()
     with transaction(db):
         if db.execute("select 1 from cases where id = %s", (case_id,)).fetchone() is None:
-            raise DecisionError(f"no such case: {case_id}")
+            raise NoSuchCaseError(f"no such case: {case_id}")
         row = db.execute(
             "insert into decisions (case_id, outcome, reason, decided_by, decided_at)"
             " values (%s, %s, %s, %s, %s) returning id",

@@ -10,7 +10,6 @@ from datetime import timedelta
 from typing import Literal, cast
 
 from record_access_audit.clock import Clock
-from record_access_audit.mail import Mailer
 from record_access_audit.store.audit import record
 from record_access_audit.store.db import Db, transaction
 
@@ -47,13 +46,21 @@ def _email(db: Db, who: Who, person_id: str) -> str:
     return cast(str, row["email"]) if row else person_id
 
 
-def request_link(db: Db, clock: Clock, mailer: Mailer, email: str, base_url: str) -> None:
-    """Emails a login link if `email` is a user's or a patient's; says nothing
-    either way, so the form never reveals who is registered."""
+@dataclass(frozen=True)
+class Mail:
+    to: str
+    subject: str
+    body: str
+
+
+def request_link(db: Db, clock: Clock, email: str, base_url: str) -> Mail | None:
+    """Makes a login link if `email` is a user's or a patient's, and returns
+    the email to send; the caller sends it after answering, so the answer is
+    the same, and as quick, whether or not the address is registered."""
     address = email.strip().lower()
     found = _find(db, address)
     if found is None:
-        return
+        return None
     who, person_id = found
     token = secrets.token_urlsafe(32)
     now = clock.now()
@@ -63,7 +70,7 @@ def request_link(db: Db, clock: Clock, mailer: Mailer, email: str, base_url: str
         (_hash(token), who, person_id, now, now + timedelta(minutes=LINK_MINUTES)),
     )
     where = f"{CLINIC}'s privacy pages" if who == "user" else f"{CLINIC}'s record access report"
-    mailer.send(
+    return Mail(
         address,
         "Your login link",
         f"Open this link to log in to {where} (made up, for a demo):\n\n{base_url}/login/{token}\n\n"
