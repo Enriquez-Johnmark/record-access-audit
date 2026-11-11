@@ -73,6 +73,8 @@ def main(argv: list[str] | None = None) -> None:
     running = commands.add_parser("run", help="read the access log from the FHIR server and run the rules")
     running.add_argument("--url")
 
+    commands.add_parser("measure", help="write evalset/report.md from the made-up log and the recordings")
+
     adding = commands.add_parser("add-user", help="add the privacy officer or the administrator")
     adding.add_argument("--email", required=True)
     adding.add_argument("--name", required=True)
@@ -115,6 +117,13 @@ def main(argv: list[str] | None = None) -> None:
             f"{result.new_accesses} new accesses; "
             f"{result.run.flags} new flags in {result.run.cases} new cases"
         )
+    elif args.command == "measure":
+        from record_access_audit.core.rules import DEFAULT_RULES
+        from record_access_audit.measure import EVALSET, report_markdown
+
+        report = report_markdown(generate(), DEFAULT_RULES, RecordedSummariser.from_file(model=MODEL))
+        (EVALSET / "report.md").write_text(report)
+        print(report.splitlines()[-1] if report else "")
     elif args.command == "add-user":
         with connect() as db:
             user = add_user(db, args.email, args.name, args.role)

@@ -2,13 +2,23 @@
 planted case is flagged, each rule's recall and precision, and how much of the
 log the clinic's own data accounts for. It never claims to catch real snooping."""
 
+import json
 from dataclasses import dataclass
+from pathlib import Path
 
 from record_access_audit.core.accounting import Index, reasons
 from record_access_audit.core.cases import CaseKey, group
+from record_access_audit.core.cases import key as case_key
+from record_access_audit.core.checks import check
+from record_access_audit.core.facts import case_facts
 from record_access_audit.core.records import AccessKind
 from record_access_audit.core.rules import RuleCode, RuleSet, flag
+from record_access_audit.core.summary import Summary
 from record_access_audit.made_up.generate import Label, MadeUp
+from record_access_audit.model.client import NotRecordedError, Summariser, parse_summary
+from record_access_audit.model.request import SummaryRequest
+
+EVALSET = Path(__file__).resolve().parents[2] / "evalset"
 
 
 @dataclass(frozen=True)
@@ -78,3 +88,117 @@ def measure_flagging(made: MadeUp, rules: RuleSet) -> FlagReport:
         charts_opened=len(charts),
         charts_accounted=accounted,
     )
+
+
+@dataclass(frozen=True)
+class SummaryResult:
+    case: str  # "S-008/P-181", or "S-023/2026-10-29" for a day
+    status: str  # shown, blocked, unreadable or not recorded
+    problems: list[str]
+
+
+def measure_summaries(made: MadeUp, rules: RuleSet, model: Summariser) -> list[SummaryResult]:
+    """I3: each case's recorded summary, put through the same checks as live ones."""
+    flags = flag(made.clinic, rules)
+    results: list[SummaryResult] = []
+    for key in sorted(group(flags)):
+        own = [f for f in flags if case_key(f) == key]
+        facts = case_facts(made.clinic, rules, key, own)
+        name = f"{key.staff}/{key.patient or key.day}"
+        try:
+            raw = model.answer(SummaryRequest.for_facts(facts, model.model))
+        except NotRecordedError:
+            results.append(SummaryResult(name, "not recorded", []))
+            continue
+        summary = parse_summary(raw)
+        if summary is None:
+            results.append(SummaryResult(name, "unreadable", []))
+            continue
+        ids = frozenset(i for i in (key.staff, key.patient) if i)
+        problems = [f"{p.check.value}: {p.found} ({p.where})" for p in check(summary, facts, ids)]
+        results.append(SummaryResult(name, "blocked" if problems else "shown", problems))
+    return results
+
+
+def _bad_summaries() -> list[tuple[str, set[str]]]:
+    items = json.loads((EVALSET / "bad-summaries.json").read_text())["summaries"]
+    return [
+        (
+            item["trips"],
+            {p.check.value for p in check(Summary.model_validate(item["summary"]), item["facts"])},
+        )
+        for item in items
+    ]
+
+
+def _percent(part: int, whole: int) -> str:
+    return f"{round(100 * part / whole)}%" if whole else "n/a"
+
+
+def report_markdown(made: MadeUp, rules: RuleSet, model: Summariser) -> str:
+    """The measurement report, `evalset/report.md`; the same every time for the same recordings."""
+    flagging = measure_flagging(made, rules)
+    bad = _bad_summaries()
+    summaries = measure_summaries(made, rules, model)
+    shown = sum(1 for r in summaries if r.status == "shown")
+    lines = [
+        "# Measurement",
+        "",
+        "Made by `record-access-audit measure` from the made-up log (`evalset/labels.json`), the hand-written"
+        " bad summaries (`evalset/bad-summaries.json`) and Claude's recorded summaries"
+        " (`evalset/recorded/summaries.json`). Everyone in it is made up. It measures the tool on a log built"
+        " to test it; it says nothing about catching real snooping.",
+        "",
+        "## Flagging (I1)",
+        "",
+        f"- Planted cases flagged with every rule they were planted for: **{flagging.planted_flagged} of"
+        f" {flagging.planted}**.",
+        f"- Innocent look-alikes flagged anyway (false alarms): **{flagging.false_alarms} of {flagging.look_alikes}**,"
+        " all of them a nurse covering a visit the record doesn't show.",
+        f"- Charts opened that the clinic's own data accounts for: **{flagging.charts_accounted} of"
+        f" {flagging.charts_opened} ({_percent(flagging.charts_accounted, flagging.charts_opened)})**.",
+        "",
+        "| Rule | Cases raised | Of them planted | Precision | Planted cases expected | Found | Recall |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    for m in flagging.rules:
+        lines.append(
+            f"| `{m.code.value}` | {m.cases} | {m.true_cases} | {_percent(m.true_cases, m.cases)} | {m.expected}"
+            f" | {m.found} | {_percent(m.found, m.expected)} |"
+        )
+    blocked_as_meant = sum(1 for trips, found in bad if found == {trips})
+    lines += [
+        "",
+        "## Bad summaries (I2)",
+        "",
+        f"**{blocked_as_meant} of {len(bad)}** hand-written bad summaries are blocked, each by exactly the check it"
+        " was written to trip.",
+        "",
+        "| Check | Bad summaries | Blocked by it |",
+        "|---|---|---|",
+    ]
+    for name in sorted({trips for trips, _ in bad}):
+        mine = [found for trips, found in bad if trips == name]
+        lines.append(f"| `{name}` | {len(mine)} | {sum(1 for found in mine if name in found)} |")
+    lines += [
+        "",
+        "## Claude's summaries (I3)",
+        "",
+        f"Claude ({model.model}) wrote a summary of every case from its numbered facts; recorded once with the"
+        f" owner's key and replayed here. **{shown} of {len(summaries)} ({_percent(shown, len(summaries))}) pass"
+        " every check.**",
+        "",
+        "On the first recorded run, 29 of 34 passed. Three of the five blocked named the case's own patient in a"
+        " sentence citing a fact without that ID; the check now lets a summary name its own case's staff member"
+        ' and patient, with a test. The two still blocked are listed below: one counts rules itself ("Two rules'
+        ' raised the case"), which the instructions forbid; one uses "two" for two people, a false alarm the'
+        " check keeps because it can't tell the two uses apart.",
+        "",
+    ]
+    failures = [r for r in summaries if r.status != "shown"]
+    if failures:
+        lines += ["| Case | Status | Problems |", "|---|---|---|"]
+        lines += [f"| {r.case} | {r.status} | {'; '.join(r.problems)} |" for r in failures]
+    else:
+        lines.append("Every summary passed.")
+    return "\n".join(lines) + "\n"

@@ -50,6 +50,8 @@ ignore = ["S101"]
 "src/record_access_audit/evidence.py" = ["RUF001", "RUF002", "E501"]
 # The facts are whole sentences, easier to read unbroken.
 "src/record_access_audit/core/facts.py" = ["E501"]
+# The measurement report's prose reads better unbroken.
+"src/record_access_audit/measure.py" = ["E501"]
 
 [tool.pyright]
 include = ["src", "tests"]
