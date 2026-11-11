@@ -25,7 +25,7 @@ The single source for spec decisions. The brief is `brief.md`. Status: **complet
   - 30 staff as `Practitioner` and `PractitionerRole` (role, department);
   - 300 patients as `Patient`, some marked VIP, a few deceased, some of them staff members or staff members' relatives;
   - their `Encounter`s, `Appointment`s and `CareTeam`s;
-  - 14 days of accesses as `AuditEvent`s shaped like IHE BALP `PatientRead` (chart opened) and `PatientQuery` (search list), about 6,000 in all.
+  - 14 days of accesses as `AuditEvent`s shaped like IHE BALP `PatientRead` (chart opened) and `PatientQuery` (search list), about 4,000 in all.
 - Clinic facts with no clean FHIR home stay in one saved file: staff shifts, staff home addresses, which patient record belongs to a staff member, and the VIP list.
 - Every FHIR resource is marked as test data (`HTEST`) and tagged with the clinic.
 - The log is **labelled** (`evalset/labels.json`): every planted case, by kind (co-worker, relative at the same address, same last name, VIP, own record, a role that never reads charts, deceased patient, a look long after care ended, a burst of charts in a day, a look outside the staff member's shift), and every **innocent look-alike** (a relative treated with a care relationship, a VIP seen by their care team, a VIP in a search list only, a covering nurse with no recorded relationship, a shared last name with an appointment, and others). At least 30 planted cases and 20 look-alikes.
@@ -55,9 +55,10 @@ An access is accounted for when, at its time:
 | `DECEASED` | the patient died before the access | not accounted for | 2 |
 | `AFTER_CARE_ENDED` | the staff member's last care relationship with the patient ended over 30 days before | not accounted for | 1 |
 | `OUTSIDE_SHIFT` | the chart was opened over an hour outside the staff member's shift | not accounted for | 1 |
-| `HIGH_VOLUME` | the staff member opened more than 40 charts that day not accounted for | one case per staff member and day | 2 |
+| `HIGH_VOLUME` | the staff member opened more than 60 charts that day, accounted for or not | every chart opened; one case per staff member and day | 2 |
 
-- Thresholds (30 days, an hour, 40 charts, 14 and 90 days) and weights are settings in the rule set.
+- Thresholds (30 days, an hour, 60 charts, 14 and 90 days) and weights are settings in the rule set.
+- When a staff member opens **their own record**, only `OWN_RECORD` applies (and the chart counts toward `HIGH_VOLUME`); the name, address and co-worker rules would match trivially. `COWORKER` means another staff member's record.
 - A **search-list hit never raises a case.** In a case it is shown as "appeared in a search list; chart not opened", never as an opened chart.
 - The **queue** is ordered by code: the sum of a case's rule weights, highest first, then the oldest flag first. A model never changes what is flagged or the order.
 - **Running** the rules over the log is idempotent: the same log and rule-set version raise no new flags. A new version flags under its own number and never rewrites a past flag. A flag on a pair whose case is already decided opens a new case.

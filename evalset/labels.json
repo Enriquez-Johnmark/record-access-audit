@@ -1,0 +1,670 @@
+[
+  {
+    "id": "C01",
+    "planted": true,
+    "kind": "co-worker",
+    "staff": "S-002",
+    "patient": "P-284",
+    "day": "2026-10-19",
+    "rules": [
+      "NO_RELATIONSHIP",
+      "COWORKER"
+    ],
+    "flagged": true,
+    "note": "opens the record of co-worker S-011"
+  },
+  {
+    "id": "C02",
+    "planted": true,
+    "kind": "co-worker",
+    "staff": "S-008",
+    "patient": "P-285",
+    "day": "2026-10-21",
+    "rules": [
+      "NO_RELATIONSHIP",
+      "COWORKER"
+    ],
+    "flagged": true,
+    "note": "opens the record of co-worker S-019"
+  },
+  {
+    "id": "C03",
+    "planted": true,
+    "kind": "co-worker",
+    "staff": "S-013",
+    "patient": "P-286",
+    "day": "2026-10-23",
+    "rules": [
+      "NO_RELATIONSHIP",
+      "COWORKER"
+    ],
+    "flagged": true,
+    "note": "opens the record of co-worker S-022"
+  },
+  {
+    "id": "C04",
+    "planted": true,
+    "kind": "co-worker",
+    "staff": "S-005",
+    "patient": "P-287",
+    "day": "2026-10-27",
+    "rules": [
+      "NO_RELATIONSHIP",
+      "COWORKER"
+    ],
+    "flagged": true,
+    "note": "opens the record of co-worker S-016"
+  },
+  {
+    "id": "C05",
+    "planted": true,
+    "kind": "relative at the same address",
+    "staff": "S-009",
+    "patient": "P-289",
+    "day": "2026-10-20",
+    "rules": [
+      "NO_RELATIONSHIP",
+      "SAME_LAST_NAME",
+      "SAME_ADDRESS"
+    ],
+    "flagged": true,
+    "note": "opens the chart of someone living at their home address"
+  },
+  {
+    "id": "C06",
+    "planted": true,
+    "kind": "relative at the same address",
+    "staff": "S-014",
+    "patient": "P-290",
+    "day": "2026-10-22",
+    "rules": [
+      "NO_RELATIONSHIP",
+      "SAME_LAST_NAME",
+      "SAME_ADDRESS"
+    ],
+    "flagged": true,
+    "note": "opens the chart of someone living at their home address"
+  },
+  {
+    "id": "C07",
+    "planted": true,
+    "kind": "relative at the same address",
+    "staff": "S-003",
+    "patient": "P-291",
+    "day": "2026-10-26",
+    "rules": [
+      "NO_RELATIONSHIP",
+      "SAME_ADDRESS"
+    ],
+    "flagged": true,
+    "note": "opens the chart of someone living at their home address"
+  },
+  {
+    "id": "C08",
+    "planted": true,
+    "kind": "relative at the same address",
+    "staff": "S-021",
+    "patient": "P-292",
+    "day": "2026-10-28",
+    "rules": [
+      "NO_RELATIONSHIP",
+      "SAME_ADDRESS"
+    ],
+    "flagged": true,
+    "note": "opens the chart of someone living at their home address"
+  },
+  {
+    "id": "C09",
+    "planted": true,
+    "kind": "same last name",
+    "staff": "S-004",
+    "patient": "P-293",
+    "day": "2026-10-21",
+    "rules": [
+      "NO_RELATIONSHIP",
+      "SAME_LAST_NAME"
+    ],
+    "flagged": true,
+    "note": "opens the chart of a patient with their last name, no care relationship"
+  },
+  {
+    "id": "C10",
+    "planted": true,
+    "kind": "same last name",
+    "staff": "S-012",
+    "patient": "P-294",
+    "day": "2026-10-26",
+    "rules": [
+      "NO_RELATIONSHIP",
+      "SAME_LAST_NAME"
+    ],
+    "flagged": true,
+    "note": "opens the chart of a patient with their last name, no care relationship"
+  },
+  {
+    "id": "C11",
+    "planted": true,
+    "kind": "same last name",
+    "staff": "S-018",
+    "patient": "P-295",
+    "day": "2026-10-29",
+    "rules": [
+      "NO_RELATIONSHIP",
+      "SAME_LAST_NAME"
+    ],
+    "flagged": true,
+    "note": "opens the chart of a patient with their last name, no care relationship"
+  },
+  {
+    "id": "C12",
+    "planted": true,
+    "kind": "VIP",
+    "staff": "S-006",
+    "patient": "P-020",
+    "day": "2026-10-22",
+    "rules": [
+      "NO_RELATIONSHIP",
+      "VIP"
+    ],
+    "flagged": true,
+    "note": "opens a VIP's chart with no care relationship"
+  },
+  {
+    "id": "C13",
+    "planted": true,
+    "kind": "VIP",
+    "staff": "S-010",
+    "patient": "P-070",
+    "day": "2026-10-26",
+    "rules": [
+      "NO_RELATIONSHIP",
+      "VIP"
+    ],
+    "flagged": true,
+    "note": "opens a VIP's chart with no care relationship"
+  },
+  {
+    "id": "C14",
+    "planted": true,
+    "kind": "VIP",
+    "staff": "S-012",
+    "patient": "P-078",
+    "day": "2026-10-28",
+    "rules": [
+      "NO_RELATIONSHIP",
+      "VIP"
+    ],
+    "flagged": true,
+    "note": "opens a VIP's chart with no care relationship"
+  },
+  {
+    "id": "C15",
+    "planted": true,
+    "kind": "VIP",
+    "staff": "S-017",
+    "patient": "P-085",
+    "day": "2026-10-30",
+    "rules": [
+      "NO_RELATIONSHIP",
+      "VIP"
+    ],
+    "flagged": true,
+    "note": "opens a VIP's chart with no care relationship"
+  },
+  {
+    "id": "C16",
+    "planted": true,
+    "kind": "own record",
+    "staff": "S-011",
+    "patient": "P-284",
+    "day": "2026-10-26",
+    "rules": [
+      "OWN_RECORD"
+    ],
+    "flagged": true,
+    "note": "opens their own chart"
+  },
+  {
+    "id": "C17",
+    "planted": true,
+    "kind": "own record",
+    "staff": "S-019",
+    "patient": "P-285",
+    "day": "2026-10-27",
+    "rules": [
+      "OWN_RECORD"
+    ],
+    "flagged": true,
+    "note": "opens their own chart"
+  },
+  {
+    "id": "C18",
+    "planted": true,
+    "kind": "own record",
+    "staff": "S-024",
+    "patient": "P-288",
+    "day": "2026-10-28",
+    "rules": [
+      "OWN_RECORD"
+    ],
+    "flagged": true,
+    "note": "opens their own chart"
+  },
+  {
+    "id": "C19",
+    "planted": true,
+    "kind": "role that never reads charts",
+    "staff": "S-029",
+    "patient": "P-251",
+    "day": "2026-10-27",
+    "rules": [
+      "ROLE_NO_CHARTS",
+      "NO_RELATIONSHIP"
+    ],
+    "flagged": true,
+    "note": "a role that never reads charts opens one"
+  },
+  {
+    "id": "C20",
+    "planted": true,
+    "kind": "role that never reads charts",
+    "staff": "S-030",
+    "patient": "P-217",
+    "day": "2026-10-29",
+    "rules": [
+      "ROLE_NO_CHARTS",
+      "NO_RELATIONSHIP"
+    ],
+    "flagged": true,
+    "note": "a role that never reads charts opens one"
+  },
+  {
+    "id": "C21",
+    "planted": true,
+    "kind": "role that never reads charts",
+    "staff": "S-027",
+    "patient": "P-213",
+    "day": "2026-10-29",
+    "rules": [
+      "ROLE_NO_CHARTS",
+      "NO_RELATIONSHIP"
+    ],
+    "flagged": true,
+    "note": "a role that never reads charts opens one"
+  },
+  {
+    "id": "C22",
+    "planted": true,
+    "kind": "deceased patient",
+    "staff": "S-007",
+    "patient": "P-074",
+    "day": "2026-10-23",
+    "rules": [
+      "NO_RELATIONSHIP",
+      "DECEASED"
+    ],
+    "flagged": true,
+    "note": "opens the chart of a patient who has died"
+  },
+  {
+    "id": "C23",
+    "planted": true,
+    "kind": "deceased patient",
+    "staff": "S-020",
+    "patient": "P-232",
+    "day": "2026-10-28",
+    "rules": [
+      "NO_RELATIONSHIP",
+      "DECEASED"
+    ],
+    "flagged": true,
+    "note": "opens the chart of a patient who has died"
+  },
+  {
+    "id": "C24",
+    "planted": true,
+    "kind": "long after care ended",
+    "staff": "S-002",
+    "patient": "P-045",
+    "day": "2026-10-28",
+    "rules": [
+      "NO_RELATIONSHIP",
+      "AFTER_CARE_ENDED"
+    ],
+    "flagged": true,
+    "note": "looks at a former patient months after their care ended"
+  },
+  {
+    "id": "C25",
+    "planted": true,
+    "kind": "long after care ended",
+    "staff": "S-008",
+    "patient": "P-181",
+    "day": "2026-10-29",
+    "rules": [
+      "NO_RELATIONSHIP",
+      "AFTER_CARE_ENDED"
+    ],
+    "flagged": true,
+    "note": "looks at a former patient months after their care ended"
+  },
+  {
+    "id": "C26",
+    "planted": true,
+    "kind": "long after care ended",
+    "staff": "S-013",
+    "patient": "P-143",
+    "day": "2026-10-30",
+    "rules": [
+      "NO_RELATIONSHIP",
+      "AFTER_CARE_ENDED"
+    ],
+    "flagged": true,
+    "note": "looks at a former patient months after their care ended"
+  },
+  {
+    "id": "C27",
+    "planted": true,
+    "kind": "outside shift",
+    "staff": "S-004",
+    "patient": "P-095",
+    "day": "2026-10-20",
+    "rules": [
+      "NO_RELATIONSHIP",
+      "OUTSIDE_SHIFT"
+    ],
+    "flagged": true,
+    "note": "opens an unrelated chart late at night, off shift"
+  },
+  {
+    "id": "C28",
+    "planted": true,
+    "kind": "outside shift",
+    "staff": "S-014",
+    "patient": "P-215",
+    "day": "2026-10-23",
+    "rules": [
+      "NO_RELATIONSHIP",
+      "OUTSIDE_SHIFT"
+    ],
+    "flagged": true,
+    "note": "opens an unrelated chart late at night, off shift"
+  },
+  {
+    "id": "C29",
+    "planted": true,
+    "kind": "outside shift",
+    "staff": "S-025",
+    "patient": "P-071",
+    "day": "2026-10-28",
+    "rules": [
+      "NO_RELATIONSHIP",
+      "OUTSIDE_SHIFT"
+    ],
+    "flagged": true,
+    "note": "opens an unrelated chart late at night, off shift"
+  },
+  {
+    "id": "C30",
+    "planted": true,
+    "kind": "burst of charts",
+    "staff": "S-023",
+    "patient": null,
+    "day": "2026-10-29",
+    "rules": [
+      "HIGH_VOLUME"
+    ],
+    "flagged": true,
+    "note": "75 charts in one day, each one a recent patient"
+  },
+  {
+    "id": "C31",
+    "planted": true,
+    "kind": "burst of charts",
+    "staff": "S-001",
+    "patient": null,
+    "day": "2026-10-23",
+    "rules": [
+      "HIGH_VOLUME"
+    ],
+    "flagged": true,
+    "note": "65 of their own patients' charts in one day"
+  },
+  {
+    "id": "L01",
+    "planted": false,
+    "kind": "same last name, with a visit",
+    "staff": "S-001",
+    "patient": "P-296",
+    "day": "2026-10-20",
+    "rules": [],
+    "flagged": false,
+    "note": "shares the doctor's last name; seen that day"
+  },
+  {
+    "id": "L02",
+    "planted": false,
+    "kind": "same last name, with a visit",
+    "staff": "S-002",
+    "patient": "P-297",
+    "day": "2026-10-21",
+    "rules": [],
+    "flagged": false,
+    "note": "shares the doctor's last name; seen that day"
+  },
+  {
+    "id": "L03",
+    "planted": false,
+    "kind": "same last name, with a visit",
+    "staff": "S-003",
+    "patient": "P-298",
+    "day": "2026-10-22",
+    "rules": [],
+    "flagged": false,
+    "note": "shares the doctor's last name; seen that day"
+  },
+  {
+    "id": "L04",
+    "planted": false,
+    "kind": "same address, with a visit",
+    "staff": "S-001",
+    "patient": "P-299",
+    "day": "2026-10-27",
+    "rules": [],
+    "flagged": false,
+    "note": "lives at the doctor's address; seen that day"
+  },
+  {
+    "id": "L05",
+    "planted": false,
+    "kind": "same address, with a visit",
+    "staff": "S-002",
+    "patient": "P-300",
+    "day": "2026-10-28",
+    "rules": [],
+    "flagged": false,
+    "note": "lives at the doctor's address; seen that day"
+  },
+  {
+    "id": "L06",
+    "planted": false,
+    "kind": "VIP seen by their care team",
+    "staff": "S-002",
+    "patient": "P-020",
+    "day": "2026-10-21",
+    "rules": [],
+    "flagged": false,
+    "note": "a VIP's own doctor reads their results"
+  },
+  {
+    "id": "L07",
+    "planted": false,
+    "kind": "VIP seen by their care team",
+    "staff": "S-001",
+    "patient": "P-070",
+    "day": "2026-10-22",
+    "rules": [],
+    "flagged": false,
+    "note": "a VIP's own doctor reads their results"
+  },
+  {
+    "id": "L08",
+    "planted": false,
+    "kind": "VIP seen by their care team",
+    "staff": "S-003",
+    "patient": "P-078",
+    "day": "2026-10-23",
+    "rules": [],
+    "flagged": false,
+    "note": "a VIP's own doctor reads their results"
+  },
+  {
+    "id": "L09",
+    "planted": false,
+    "kind": "VIP in a search list only",
+    "staff": "S-018",
+    "patient": "P-085",
+    "day": "2026-10-22",
+    "rules": [],
+    "flagged": false,
+    "note": "a VIP's name appears in a search list; the chart is not opened"
+  },
+  {
+    "id": "L10",
+    "planted": false,
+    "kind": "VIP in a search list only",
+    "staff": "S-019",
+    "patient": "P-109",
+    "day": "2026-10-23",
+    "rules": [],
+    "flagged": false,
+    "note": "a VIP's name appears in a search list; the chart is not opened"
+  },
+  {
+    "id": "L11",
+    "planted": false,
+    "kind": "VIP in a search list only",
+    "staff": "S-020",
+    "patient": "P-208",
+    "day": "2026-10-26",
+    "rules": [],
+    "flagged": false,
+    "note": "a VIP's name appears in a search list; the chart is not opened"
+  },
+  {
+    "id": "L12",
+    "planted": false,
+    "kind": "co-worker seen by their care team",
+    "staff": "S-001",
+    "patient": "P-287",
+    "day": "2026-10-23",
+    "rules": [],
+    "flagged": false,
+    "note": "a staff member's own doctor reads their chart"
+  },
+  {
+    "id": "L13",
+    "planted": false,
+    "kind": "co-worker seen by their care team",
+    "staff": "S-001",
+    "patient": "P-286",
+    "day": "2026-10-26",
+    "rules": [],
+    "flagged": false,
+    "note": "a staff member's own doctor reads their chart"
+  },
+  {
+    "id": "L14",
+    "planted": false,
+    "kind": "deceased patient's bill",
+    "staff": "S-023",
+    "patient": "P-005",
+    "day": "2026-10-26",
+    "rules": [],
+    "flagged": false,
+    "note": "billing closes the account of a patient who died after a recent visit"
+  },
+  {
+    "id": "L15",
+    "planted": false,
+    "kind": "after hours, own patient",
+    "staff": "S-001",
+    "patient": "P-004",
+    "day": "2026-10-28",
+    "rules": [],
+    "flagged": false,
+    "note": "a doctor reads their own patient's results after hours"
+  },
+  {
+    "id": "L16",
+    "planted": false,
+    "kind": "after hours, own patient",
+    "staff": "S-002",
+    "patient": "P-023",
+    "day": "2026-10-29",
+    "rules": [],
+    "flagged": false,
+    "note": "a doctor reads their own patient's results after hours"
+  },
+  {
+    "id": "L17",
+    "planted": false,
+    "kind": "covering nurse",
+    "staff": "S-007",
+    "patient": "P-222",
+    "day": "2026-10-21",
+    "rules": [
+      "NO_RELATIONSHIP"
+    ],
+    "flagged": true,
+    "note": "covers a colleague's visit; the record doesn't show it (a false alarm)"
+  },
+  {
+    "id": "L18",
+    "planted": false,
+    "kind": "covering nurse",
+    "staff": "S-008",
+    "patient": "P-169",
+    "day": "2026-10-22",
+    "rules": [
+      "NO_RELATIONSHIP"
+    ],
+    "flagged": true,
+    "note": "covers a colleague's visit; the record doesn't show it (a false alarm)"
+  },
+  {
+    "id": "L19",
+    "planted": false,
+    "kind": "covering nurse",
+    "staff": "S-009",
+    "patient": "P-199",
+    "day": "2026-10-23",
+    "rules": [
+      "NO_RELATIONSHIP"
+    ],
+    "flagged": true,
+    "note": "covers a colleague's visit; the record doesn't show it (a false alarm)"
+  },
+  {
+    "id": "L20",
+    "planted": false,
+    "kind": "booking ten days ahead",
+    "staff": "S-021",
+    "patient": "P-055",
+    "day": "2026-10-21",
+    "rules": [],
+    "flagged": false,
+    "note": "the front desk confirms an appointment ten days away"
+  },
+  {
+    "id": "L21",
+    "planted": false,
+    "kind": "own name in a search list",
+    "staff": "S-016",
+    "patient": "P-287",
+    "day": "2026-10-22",
+    "rules": [],
+    "flagged": false,
+    "note": "their own record appears in a search list they ran; not opened"
+  }
+]
