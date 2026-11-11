@@ -1,6 +1,9 @@
 from dataclasses import replace
 from typing import LiteralString, cast
 
+import psycopg
+import pytest
+
 from record_access_audit.audit_run import fetch_and_run, run_rules
 from record_access_audit.clock import FixedClock
 from record_access_audit.core.rules import DEFAULT_RULES, RuleCode
@@ -109,3 +112,21 @@ def test_b4_a_run_from_the_fhir_server_stores_the_log_and_flags_it_once(
     assert first.run.cases == 34
     again = fetch_and_run(db, clock, loaded_fhir, FACTS)
     assert (again.new_accesses, again.run.flags, again.run.cases) == (0, 0, 0)
+
+
+def test_b4_the_database_refuses_to_change_or_remove_a_flag_case_or_rule_set_version(db: Db) -> None:
+    clock = stored(db)
+    run_rules(db, clock, FACTS)
+    for sql in [
+        "update flags set weight = 9",
+        "delete from flags",
+        "truncate flags cascade",
+        "update cases set staff = 'S-001'",
+        "delete from cases",
+        "truncate cases cascade",
+        "update rule_set_versions set settings = '{}'",
+        "delete from rule_set_versions",
+        "truncate rule_set_versions cascade",
+    ]:
+        with pytest.raises(psycopg.errors.RaiseException, match="append-only"):
+            db.execute(sql)  # type: ignore[arg-type]
