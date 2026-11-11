@@ -36,3 +36,18 @@ def test_b6_a_rule_set_missing_a_weight_or_with_a_bad_threshold_is_refused(db: D
         with pytest.raises(RuleSetError, match=problem):
             add_version(db, clock, OFFICER, bad)
     assert current(db, clock).version == 1
+
+
+def test_b6_only_the_privacy_officer_changes_the_rules_and_each_change_is_a_new_version(db: Db) -> None:
+    from record_access_audit.store.rule_sets import change_rules
+    from tests.support.people import officer_and_admin
+
+    clock = stored(db)
+    officer, admin = officer_and_admin(db)
+    with pytest.raises(RuleSetError, match="only the privacy officer"):
+        change_rules(db, clock, admin, replace(DEFAULT_RULES, high_volume_charts=50))
+    changed = change_rules(db, clock, officer, replace(DEFAULT_RULES, high_volume_charts=50))
+    assert (changed.version, changed.high_volume_charts) == (2, 50)
+    assert current(db, clock) == changed
+    row = db.execute("select created_by from rule_set_versions where version = 2").fetchone()
+    assert row == {"created_by": OFFICER}

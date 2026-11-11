@@ -2,7 +2,7 @@
 thresholds and weights; no version is ever edited."""
 
 from dataclasses import asdict
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from psycopg.types.json import Jsonb
 
@@ -11,6 +11,9 @@ from record_access_audit.core.records import Role
 from record_access_audit.core.rules import DEFAULT_RULES, RuleCode, RuleSet
 from record_access_audit.store.audit import SYSTEM, record
 from record_access_audit.store.db import Db, transaction
+
+if TYPE_CHECKING:
+    from record_access_audit.people import User
 
 
 def _settings(rules: RuleSet) -> dict[str, Any]:
@@ -117,3 +120,10 @@ def add_version(db: Db, clock: Clock, actor: str, rules: RuleSet) -> RuleSet:
             details=settings,
         )
     return _rules(version, settings)
+
+
+def change_rules(db: Db, clock: Clock, user: "User", rules: RuleSet) -> RuleSet:
+    """The privacy officer's change to the rules, saved as a new version (B6)."""
+    if user.role != "privacy officer":
+        raise RuleSetError("only the privacy officer can change the rules")
+    return add_version(db, clock, user.email, rules)
