@@ -2,12 +2,14 @@ from dataclasses import replace
 from datetime import timedelta
 from typing import LiteralString, cast
 
-from record_access_audit.audit_run import run_rules
+from record_access_audit.audit_run import fetch_and_run, run_rules
+from record_access_audit.clock import FixedClock
 from record_access_audit.core.rules import DEFAULT_RULES
+from record_access_audit.fhir.client import FhirServer
 from record_access_audit.made_up.generate import generate
 from record_access_audit.store.db import Db
 from record_access_audit.store.rule_sets import add_version, current
-from tests.support.stored import stored
+from tests.support.stored import NOW, stored
 
 FACTS = generate().clinic.facts
 
@@ -77,3 +79,15 @@ def test_b4_the_first_rule_set_is_the_clinics_default_as_version_1(db: Db) -> No
     clock = stored(db)
     assert current(db, clock) == DEFAULT_RULES
     assert current(db, clock).version == 1
+
+
+def test_b4_a_run_from_the_fhir_server_stores_the_log_and_flags_it_once(
+    db: Db, loaded_fhir: FhirServer
+) -> None:
+    clock = FixedClock(NOW)
+    first = fetch_and_run(db, clock, loaded_fhir, FACTS)
+    assert first.refused == []
+    assert first.new_accesses == len(generate().clinic.accesses)
+    assert first.run.cases == 34
+    again = fetch_and_run(db, clock, loaded_fhir, FACTS)
+    assert (again.new_accesses, again.run.flags, again.run.cases) == (0, 0, 0)

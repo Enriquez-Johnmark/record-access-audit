@@ -10,8 +10,10 @@ from record_access_audit.clock import Clock
 from record_access_audit.core.cases import CaseKey, key
 from record_access_audit.core.records import ClinicFacts
 from record_access_audit.core.rules import Flag, flag
+from record_access_audit.fhir.client import FhirServer
+from record_access_audit.fhir.reader import Refused, read
 from record_access_audit.store.audit import SYSTEM, record
-from record_access_audit.store.clinic import load_clinic
+from record_access_audit.store.clinic import load_clinic, save_clinic
 from record_access_audit.store.db import Db, transaction
 from record_access_audit.store.rule_sets import current
 
@@ -92,3 +94,28 @@ def run_rules(db: Db, clock: Clock, facts: ClinicFacts, actor: str = SYSTEM) -> 
             details={"flags": len(rows), "cases": opened},
         )
     return RunResult(rules.version, len(rows), opened)
+
+
+@dataclass(frozen=True)
+class FetchResult:
+    refused: list[Refused]
+    new_accesses: int
+    run: RunResult
+
+
+def fetch_and_run(
+    db: Db, clock: Clock, server: FhirServer, facts: ClinicFacts, actor: str = SYSTEM
+) -> FetchResult:
+    """Reads the clinic from its FHIR server, stores what is new, and runs the rules."""
+    result = read(server.fetch_clinic(), facts)
+    new = save_clinic(db, result.clinic)
+    record(
+        db,
+        at=clock.now(),
+        actor=actor,
+        action="log.loaded",
+        subject_type="fhir",
+        subject_id=server.base_url,
+        details={"new_accesses": new, "refused": [f"{r.resource}: {r.reason}" for r in result.refused]},
+    )
+    return FetchResult(result.refused, new, run_rules(db, clock, facts, actor))
