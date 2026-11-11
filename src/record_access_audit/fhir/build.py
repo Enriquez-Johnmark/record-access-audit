@@ -114,6 +114,8 @@ def _patient(patient: Patient) -> Resource:
     }
     if patient.deceased_at is not None:
         resource["deceasedDateTime"] = _when(patient.deceased_at)
+    if patient.email is not None:
+        resource["telecom"] = [{"system": "email", "value": patient.email}]
     return resource
 
 

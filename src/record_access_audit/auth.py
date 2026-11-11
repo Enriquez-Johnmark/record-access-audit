@@ -35,6 +35,9 @@ def _find(db: Db, email: str) -> tuple[Who, str] | None:
     user = db.execute("select id from users where email = %s", (email,)).fetchone()
     if user is not None:
         return "user", str(user["id"])
+    patient = db.execute("select id from patients where lower(email) = %s", (email,)).fetchone()
+    if patient is not None:
+        return "patient", str(patient["id"])
     return None
 
 

@@ -24,14 +24,15 @@ export function AppShell() {
   // dropped connection) is retried while the person stays where they are.
   if (me.error instanceof ApiError && me.error.isNotLoggedIn)
     return <Navigate to="/login" replace />
-  const items =
-    me.data?.role === "administrator" ? [run, rules, activity] : [cases, rules, activity]
+  if (me.data?.who === "patient") return <Navigate to="/report" replace />
+  const user = me.data?.who === "user" ? me.data : undefined
+  const items = user?.role === "administrator" ? [run, rules, activity] : [cases, rules, activity]
   return (
     <div className="flex min-h-svh flex-col">
       <header className="border-b bg-card">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 pt-3 md:px-8">
           <Logo />
-          <Account who={me.data ? `${me.data.name}, ${me.data.role}` : undefined} />
+          <Account who={user ? `${user.name}, ${user.role}` : undefined} />
         </div>
         <nav aria-label="Places" className="mx-auto w-full max-w-6xl px-4 md:px-8">
           <ul className="-mb-px flex gap-6 overflow-x-auto">

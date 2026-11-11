@@ -50,10 +50,10 @@ def save_clinic(db: Db, clinic: Clinic) -> int:
             ],
         )
         cur.executemany(
-            "insert into patients values (%s, %s, %s, %s, %s, %s, %s, %s) on conflict (id) do update set"
+            "insert into patients values (%s, %s, %s, %s, %s, %s, %s, %s, %s) on conflict (id) do update set"
             " given = excluded.given, family = excluded.family, birth_date = excluded.birth_date,"
             " address_line = excluded.address_line, city = excluded.city,"
-            " postal_code = excluded.postal_code, deceased_at = excluded.deceased_at",
+            " postal_code = excluded.postal_code, deceased_at = excluded.deceased_at, email = excluded.email",
             [
                 (
                     p.id,
@@ -64,6 +64,7 @@ def save_clinic(db: Db, clinic: Clinic) -> int:
                     p.address.city,
                     p.address.postal_code,
                     p.deceased_at,
+                    p.email,
                 )
                 for p in clinic.patients
             ],
@@ -145,7 +146,15 @@ def load_clinic(db: Db, facts: ClinicFacts, staff: str | None = None) -> Clinic:
             for r in rows("select * from staff order by id")
         ),
         patients=tuple(
-            Patient(r["id"], r["given"], r["family"], r["birth_date"], _address(r), _local(r["deceased_at"]))
+            Patient(
+                r["id"],
+                r["given"],
+                r["family"],
+                r["birth_date"],
+                _address(r),
+                _local(r["deceased_at"]),
+                r["email"],
+            )
             for r in rows("select * from patients order by id")
         ),
         care_teams=tuple(

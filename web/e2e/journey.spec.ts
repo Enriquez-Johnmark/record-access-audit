@@ -58,3 +58,17 @@ test("the privacy officer saves a rule change as a new version", async ({ page }
   await page.getByRole("button", { name: "Save as a new version" }).click()
   await expect(page.getByText(/Saved as version \d+/)).toBeVisible()
 })
+
+test("a patient sees who looked at their record by role and department, never by name", async ({
+  page,
+}) => {
+  // A made-up patient living at a nurse's address, whose chart the nurse opened three times.
+  await logIn(page, "aaron.quintero.p289@example.test")
+  await expect(page.getByRole("heading", { name: "Who looked at your record" })).toBeVisible()
+  const rows = page.locator("tbody tr")
+  await expect(rows).toHaveCount(3)
+  await expect(rows.first()).toContainText("nurse")
+  await expect(rows.first()).toContainText("Family Medicine")
+  await expect(page.locator("table")).not.toContainText("Rosa")
+  await expect(page.getByText(/beyond what HIPAA now requires/)).toBeVisible()
+})

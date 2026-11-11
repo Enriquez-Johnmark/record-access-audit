@@ -62,7 +62,7 @@ export function RulesPage() {
     <RulesForm
       key={rules.data.version}
       page={rules.data}
-      canEdit={me.data.role === "privacy officer"}
+      canEdit={me.data.who === "user" && me.data.role === "privacy officer"}
       save={save}
     />
   )

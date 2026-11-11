@@ -105,12 +105,18 @@ class _PractitionerRole(_Strict):
     specialty: NonEmpty[_Concept]
 
 
+class _ContactPoint(_Strict):
+    system: str
+    value: str
+
+
 class _Patient(_Strict):
     id: str
     name: NonEmpty[_HumanName]
     birthDate: FhirDate  # noqa: N815
     address: NonEmpty[_Address]
     deceasedDateTime: FhirDateTime | None = None  # noqa: N815
+    telecom: list[_ContactPoint] = []
 
 
 class _Period(_Strict):
@@ -299,6 +305,7 @@ def read(resources: dict[str, list[dict[str, Any]]], facts: ClinicFacts) -> Read
                 p.birthDate,
                 _address(p.address),
                 _local(p.deceasedDateTime) if p.deceasedDateTime else None,
+                next((t.value for t in p.telecom if t.system == "email"), None),
             )
 
         made = taking("Patient", raw, make_patient)

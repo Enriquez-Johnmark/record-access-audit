@@ -7,5 +7,5 @@ import { RunPage } from "@/features/home/run-page"
 export function HomePage() {
   const me = useMe()
   if (!me.data) return <Skeleton className="h-64 w-full" />
-  return me.data.role === "administrator" ? <RunPage /> : <QueuePage />
+  return me.data.who === "user" && me.data.role === "administrator" ? <RunPage /> : <QueuePage />
 }

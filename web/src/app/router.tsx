@@ -20,6 +20,11 @@ export const router = createBrowserRouter([
     }),
   },
   {
+    path: "/report",
+    HydrateFallback: PageLoading,
+    lazy: async () => ({ Component: (await import("@/features/report/report-page")).ReportPage }),
+  },
+  {
     Component: AppShell,
     HydrateFallback: PageLoading,
     children: [

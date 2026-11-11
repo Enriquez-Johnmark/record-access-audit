@@ -2,7 +2,14 @@
 
 export type Role = "privacy officer" | "administrator"
 
-export type Me = { who: "user"; name: string; email: string; role: Role }
+export type Me =
+  { who: "user"; name: string; email: string; role: Role } | { who: "patient"; name: string }
+
+export interface AccessReport {
+  patient: string
+  note: string
+  looks: { at: string; role: string; department: string }[]
+}
 
 export interface Person {
   id: string

@@ -12,6 +12,10 @@ export const activityKeys = {
   list: (actor: string, action: string) => ["activity", actor, action] as const,
 }
 
+export const reportKeys = {
+  mine: () => ["report"] as const,
+}
+
 export const ruleKeys = {
   current: () => ["rules"] as const,
 }

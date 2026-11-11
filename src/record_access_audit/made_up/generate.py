@@ -4,7 +4,7 @@ labelled. Seeded, so it is the same every time (A1). Every person in it is
 made up."""
 
 import random
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date, datetime, time, timedelta
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -185,7 +185,9 @@ class _Builder:
         born: date,
         deceased_at: datetime | None = None,
     ) -> Patient:
-        patient = Patient(f"P-{len(self.patients) + 1:03d}", given, family, born, address, deceased_at)
+        patient_id = f"P-{len(self.patients) + 1:03d}"
+        email = f"{given}.{family}.{patient_id.replace('-', '')}@example.test".lower()
+        patient = Patient(patient_id, given, family, born, address, deceased_at, email)
         self.patients.append(patient)
         return patient
 
@@ -643,7 +645,7 @@ class _Builder:
     def _die(self, patient: str, at: datetime) -> None:
         index = next(i for i, p in enumerate(self.patients) if p.id == patient)
         old = self.patients[index]
-        self.patients[index] = Patient(old.id, old.given, old.family, old.birth_date, old.address, at)
+        self.patients[index] = replace(old, deceased_at=at)
         # Off every care team's panel, and no visits or bookings after death.
         self.team[patient] = []
         self.encounters = [e for e in self.encounters if not (e.patient == patient and e.start > at)]

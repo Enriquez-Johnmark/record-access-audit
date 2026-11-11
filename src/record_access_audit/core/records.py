@@ -77,6 +77,7 @@ class Patient:
     birth_date: date
     address: Address
     deceased_at: datetime | None
+    email: str | None = None  # how the patient logs in to see their access report
 
 
 @dataclass(frozen=True)

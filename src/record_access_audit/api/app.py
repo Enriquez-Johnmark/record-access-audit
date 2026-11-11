@@ -38,6 +38,7 @@ from record_access_audit.fhir.client import FhirError, FhirServer
 from record_access_audit.mail import Mailer
 from record_access_audit.model.client import Summariser
 from record_access_audit.people import User, user_by_id
+from record_access_audit.store.audit import record
 from record_access_audit.store.db import Db
 from record_access_audit.store.queue import open_cases
 from record_access_audit.store.rule_sets import (
@@ -104,8 +105,10 @@ SessionDep = Annotated[Session | None, Depends(_session)]
 
 
 def _user(session: SessionDep, db: DbDep) -> User:
-    if session is None or session.who != "user":
+    if session is None:
         raise HTTPException(401, "log in first")
+    if session.who != "user":
+        raise HTTPException(403, "these pages are for the clinic's privacy office")
     user = user_by_id(db, int(session.person_id))
     if user is None:
         raise HTTPException(401, "log in first")
@@ -129,6 +132,12 @@ def _administrator(user: UserDep) -> User:
 
 OfficerDep = Annotated[User, Depends(_officer)]
 AdminDep = Annotated[User, Depends(_administrator)]
+
+REPORT_NOTE = (
+    "This report goes beyond what HIPAA now requires: a 2011 proposal to give patients a list of everyone who"
+    " accessed their electronic record was withdrawn in 2018. It shows each time your chart was opened,"
+    " by the staff member's role and department. Example Valley Clinic and everyone in it are made up."
+)
 
 CSP = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'"
 
@@ -217,8 +226,56 @@ def create_app(
         return response
 
     @app.get("/api/me")
-    def me(user: UserDep) -> dict[str, Any]:
+    def me(session: SessionDep, db: DbDep) -> dict[str, Any]:
+        if session is None:
+            raise HTTPException(401, "log in first")
+        if session.who == "patient":
+            row = db.execute(
+                "select given, family from patients where id = %s", (session.person_id,)
+            ).fetchone()
+            if row is None:
+                raise HTTPException(401, "log in first")
+            return {"who": "patient", "name": f"{row['given']} {row['family']}"}
+        user = _user(session, db)
         return {"who": "user", "email": user.email, "name": user.name, "role": user.role}
+
+    @app.get("/api/report")
+    def report(session: SessionDep, db: DbDep) -> dict[str, Any]:
+        """A4: when the patient's chart was opened, by role and department, never by whom."""
+        if session is None:
+            raise HTTPException(401, "log in first")
+        if session.who != "patient":
+            raise HTTPException(403, "the access report is for patients")
+        patient = db.execute(
+            "select given, family from patients where id = %s", (session.person_id,)
+        ).fetchone()
+        if patient is None:
+            raise HTTPException(401, "log in first")
+        looks = db.execute(
+            "select a.at, s.role, s.department from accesses a join staff s on s.id = a.staff"
+            " where a.kind = 'chart opened' and a.patients = array[%s]::text[] order by a.at",
+            (session.person_id,),
+        ).fetchall()
+        record(
+            db,
+            at=clock.now(),
+            actor=session.email,
+            action="report.viewed",
+            subject_type="patient",
+            subject_id=session.person_id,
+        )
+        return {
+            "patient": f"{patient['given']} {patient['family']}",
+            "note": REPORT_NOTE,
+            "looks": [
+                {
+                    "at": look["at"],
+                    "role": Role[str(look["role"])].value,
+                    "department": Department[str(look["department"])].value,
+                }
+                for look in looks
+            ],
+        }
 
     @app.get("/api/queue")
     def queue(_: OfficerDep, db: DbDep) -> list[dict[str, Any]]:
