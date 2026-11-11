@@ -14,7 +14,7 @@ from record_access_audit.clock import Clock
 from record_access_audit.core.cases import CaseKey
 from record_access_audit.core.checks import check
 from record_access_audit.core.facts import case_facts
-from record_access_audit.core.records import Clinic, ClinicFacts
+from record_access_audit.core.records import CLINIC_TIME_ZONE, ClinicFacts
 from record_access_audit.core.rules import Flag, RuleCode, RuleSet
 from record_access_audit.core.summary import Summary
 from record_access_audit.model.client import Summariser, parse_summary, recording_key
@@ -31,6 +31,7 @@ Status = Literal["shown", "blocked", "unreadable"]
 class StoredSummary:
     id: int
     model: str
+    request_hash: str
     facts: list[str]
     status: Status
     summary: Summary | None  # set only when shown
@@ -53,30 +54,36 @@ def _case(db: Db, case_id: int) -> tuple[CaseKey, list[Flag]]:
             int(cast(int, r["version"])),
         )
         for r in db.execute(
-            "select f.access, f.code, f.version, (a.at at time zone 'America/Chicago')::date as day"
+            "select f.access, f.code, f.version, (a.at at time zone %s)::date as day"
             " from flags f join accesses a on a.id = f.access where f.case_id = %s order by f.id",
-            (case_id,),
+            (CLINIC_TIME_ZONE, case_id),
         ).fetchall()
     ]
     return key, flags
 
 
-def _facts(db: Db, clinic: Clinic, rules: RuleSet, case_id: int) -> list[str]:
+def _facts(db: Db, facts: ClinicFacts, rules: RuleSet, case_id: int) -> list[str]:
     key, flags = _case(db, case_id)
+    # Only the staff member's accesses and the care of the patients in them.
+    clinic = load_clinic(db, facts, staff=key.staff)
     return case_facts(clinic, rules, key, flags)
 
 
 def facts_for_case(db: Db, clock: Clock, facts: ClinicFacts, case_id: int) -> list[str]:
     """The case's numbered facts, as the privacy officer and the model see them."""
-    return _facts(db, load_clinic(db, facts), current(db, clock), case_id)
+    return _facts(db, facts, current(db, clock), case_id)
 
 
-def summarise(
-    db: Db, clock: Clock, model: Summariser, clinic: Clinic, rules: RuleSet, case_id: int, actor: str = SYSTEM
+def _store(
+    db: Db,
+    clock: Clock,
+    case_id: int,
+    model: str,
+    request: SummaryRequest,
+    raw: str,
+    facts: list[str],
+    actor: str,
 ) -> Status:
-    facts = _facts(db, clinic, rules, case_id)
-    request = SummaryRequest.for_facts(facts, model.model)
-    raw = model.answer(request)
     summary = parse_summary(raw)
     problems = check(summary, facts) if summary is not None else []
     status: Status = "unreadable" if summary is None else "blocked" if problems else "shown"
@@ -86,7 +93,7 @@ def summarise(
             " written_at) values (%s, %s, %s, %s, %s, %s, %s, %s)",
             (
                 case_id,
-                model.model,
+                model,
                 recording_key(request),
                 Jsonb(facts),
                 Jsonb(summary.model_dump() if summary is not None else {"raw": raw[:2000]}),
@@ -112,32 +119,60 @@ def summarise(
             action=f"summary.{'written' if status == 'shown' else status}",
             subject_type="case",
             subject_id=str(case_id),
-            details={"model": model.model, "problems": [f"{p.check.value}: {p.found}" for p in problems]},
+            details={"model": model, "problems": [f"{p.check.value}: {p.found}" for p in problems]},
         )
     return status
 
 
-def summarise_open(db: Db, clock: Clock, model: Summariser | None, facts: ClinicFacts) -> dict[str, int]:
-    """Summarises every open case that has no summary yet; with no model, nothing (C3)."""
+def summarise_open(
+    db: Db, clock: Clock, model: Summariser | None, facts: ClinicFacts, actor: str = SYSTEM
+) -> dict[str, int]:
+    """Summarises every open case whose facts have no summary yet: a new case,
+    one whose facts changed, or one whose last answer was unreadable. A blocked
+    summary isn't asked for again until the facts change. A model error on one
+    case is recorded and the others go on. With no model, nothing (C3)."""
     if model is None:
         return {}
-    waiting = [
+    rules = current(db, clock)
+    counts: Counter[str] = Counter()
+    open_ids = [
         int(cast(int, r["id"]))
         for r in db.execute(
-            "select id from cases c where not exists (select 1 from decisions d where d.case_id = c.id)"
-            " and not exists (select 1 from summaries s where s.case_id = c.id) order by id"
+            "select id from cases c"
+            " where not exists (select 1 from decisions d where d.case_id = c.id) order by id"
         ).fetchall()
     ]
-    if not waiting:
-        return {}
-    clinic = load_clinic(db, facts)
-    rules = current(db, clock)
-    return dict(Counter(summarise(db, clock, model, clinic, rules, case_id) for case_id in waiting))
+    for case_id in open_ids:
+        case_facts_now = _facts(db, facts, rules, case_id)
+        request = SummaryRequest.for_facts(case_facts_now, model.model)
+        latest = latest_summary(db, case_id)
+        if (
+            latest is not None
+            and latest.request_hash == recording_key(request)
+            and latest.status != "unreadable"
+        ):
+            continue
+        try:
+            raw = model.answer(request)
+        except Exception as error:  # a missing recording, an API error or a timeout: no summary this time
+            record(
+                db,
+                at=clock.now(),
+                actor=actor,
+                action="summary.failed",
+                subject_type="case",
+                subject_id=str(case_id),
+                details={"model": model.model, "error": type(error).__name__},
+            )
+            counts["failed"] += 1
+            continue
+        counts[_store(db, clock, case_id, model.model, request, raw, case_facts_now, actor)] += 1
+    return dict(counts)
 
 
 def latest_summary(db: Db, case_id: int) -> StoredSummary | None:
     row = db.execute(
-        "select id, model, facts, answer, status, problems, written_at from summaries"
+        "select id, model, request_hash, facts, answer, status, problems, written_at from summaries"
         " where case_id = %s order by id desc limit 1",
         (case_id,),
     ).fetchone()
@@ -147,6 +182,7 @@ def latest_summary(db: Db, case_id: int) -> StoredSummary | None:
     return StoredSummary(
         id=int(cast(int, row["id"])),
         model=cast(str, row["model"]),
+        request_hash=cast(str, row["request_hash"]),
         facts=cast(list[str], row["facts"]),
         status=status,
         summary=Summary.model_validate(row["answer"]) if status == "shown" else None,

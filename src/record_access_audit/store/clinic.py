@@ -118,9 +118,26 @@ def _address(row: dict[str, Any]) -> Address:
     return Address(row["address_line"], row["city"], row["postal_code"])
 
 
-def load_clinic(db: Db, facts: ClinicFacts) -> Clinic:
-    def rows(sql: str) -> list[dict[str, Any]]:
-        return cast(list[dict[str, Any]], db.execute(sql).fetchall())  # type: ignore[arg-type]
+def load_clinic(db: Db, facts: ClinicFacts, staff: str | None = None) -> Clinic:
+    """The stored clinic; with `staff`, only that staff member's accesses and
+    the care of the patients in them (enough for one case's facts)."""
+    patients: list[str] | None = None
+    if staff is not None:
+        row = db.execute(
+            "select coalesce(array_agg(distinct p), '{}') as ids"
+            " from accesses, unnest(patients) p where staff = %s",
+            (staff,),
+        ).fetchone()
+        patients = list(cast(list[str], cast(dict[str, Any], row)["ids"]))
+
+    def rows(sql: str, *, by_patient: bool = False, by_staff: bool = False) -> list[dict[str, Any]]:
+        params: tuple[Any, ...] = ()
+        if by_staff and staff is not None:
+            sql, params = sql.replace("order by", "where staff = %s order by"), (staff,)
+        elif by_patient and patients is not None:
+            sql, params = sql.replace("order by", "where patient = any(%s) order by"), (patients,)
+        found = db.execute(sql, params).fetchall()  # type: ignore[arg-type]  # our own fixed queries
+        return found
 
     return Clinic(
         staff=tuple(
@@ -133,15 +150,17 @@ def load_clinic(db: Db, facts: ClinicFacts) -> Clinic:
         ),
         care_teams=tuple(
             CareTeamMember(r["patient"], r["staff"], _local(r["start_at"]), _local(r["end_at"]))
-            for r in rows("select * from care_team_members order by patient, staff, start_at")
+            for r in rows(
+                "select * from care_team_members order by patient, staff, start_at", by_patient=True
+            )
         ),
         encounters=tuple(
             Encounter(r["id"], r["patient"], tuple(r["staff"]), _local(r["start_at"]), _local(r["end_at"]))
-            for r in rows("select * from encounters order by id")
+            for r in rows("select * from encounters order by id", by_patient=True)
         ),
         appointments=tuple(
             Appointment(r["id"], r["patient"], r["staff"], _local(r["start_at"]), _local(r["end_at"]))
-            for r in rows("select * from appointments order by id")
+            for r in rows("select * from appointments order by id", by_patient=True)
         ),
         accesses=tuple(
             Access(
@@ -154,7 +173,7 @@ def load_clinic(db: Db, facts: ClinicFacts) -> Clinic:
                 r["seconds"],
                 r["workstation"],
             )
-            for r in rows("select * from accesses order by id")
+            for r in rows("select * from accesses order by id", by_staff=True)
         ),
         facts=facts,
     )

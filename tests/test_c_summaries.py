@@ -2,6 +2,7 @@ import json
 
 from record_access_audit.audit_run import run_rules
 from record_access_audit.made_up.generate import generate
+from record_access_audit.model.client import NotRecordedError
 from record_access_audit.model.request import MODEL, SummaryRequest
 from record_access_audit.store.db import Db
 from record_access_audit.store.queue import open_cases
@@ -91,3 +92,52 @@ def test_d6_a_blocked_summary_is_kept_with_its_problems_and_the_case_shows_its_f
             "why": "A summary describes; it never decides or accuses.",
         }
     ]
+
+
+class Flaky(Fake):
+    """Fails on every other request, as a missing recording or an API error would."""
+
+    def answer(self, request: SummaryRequest) -> str:
+        self.asked.append(request)
+        if len(self.asked) % 2 == 0:
+            raise NotRecordedError("not recorded")
+        return self.raw
+
+
+def test_c1_a_model_error_on_one_case_leaves_it_unsummarised_and_the_others_go_on(db: Db) -> None:
+    clock = stored(db)
+    run_rules(db, clock, FACTS)
+    assert summarise_open(db, clock, Flaky(), FACTS) == {"shown": 17, "failed": 17}
+    assert summarise_open(db, clock, Fake(), FACTS) == {"shown": 17}
+
+
+def test_c1_a_case_whose_facts_changed_is_summarised_again_and_an_unreadable_answer_is_retried(
+    db: Db,
+) -> None:
+    clock = stored(db)
+    run_rules(db, clock, FACTS)
+    summarise_open(db, clock, Fake("not a summary"), FACTS)
+    assert summarise_open(db, clock, Fake(), FACTS) == {"shown": 34}
+    assert summarise_open(db, clock, Fake(), FACTS) == {}
+    case = first_case(db)
+    access = db.execute("select access from flags where case_id = %s order by id limit 1", (case,)).fetchone()
+    assert access is not None
+    db.execute(
+        "insert into accesses (id, staff, at, kind, patients, section, seconds, workstation)"
+        " select 'A-99999', staff, at + interval '1 hour', kind, patients, section, seconds, workstation"
+        " from accesses where id = %s",
+        (access["access"],),
+    )
+    run_rules(db, clock, FACTS)
+    assert summarise_open(db, clock, Fake(), FACTS) == {"shown": 1}
+    latest = latest_summary(db, case)
+    assert latest is not None
+    assert latest.facts == facts_for_case(db, clock, FACTS, case)
+
+
+def test_d6_a_blocked_summary_is_not_asked_for_again_until_its_facts_change(db: Db) -> None:
+    clock = stored(db)
+    run_rules(db, clock, FACTS)
+    accusing = json.dumps({"summary": [{"text": "This looks like snooping.", "facts": [1]}], "to_check": []})
+    summarise_open(db, clock, Fake(accusing), FACTS)
+    assert summarise_open(db, clock, Fake(), FACTS) == {}
