@@ -6,6 +6,8 @@ from record_access_audit.fhir.client import FhirServer
 from record_access_audit.made_up.generate import generate
 from record_access_audit.made_up.load import load
 
+pytest_plugins = ["tests.support.db"]
+
 FHIR_URL = os.environ.get("FHIR_URL", "http://127.0.0.1:8090/fhir")
 
 
