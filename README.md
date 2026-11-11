@@ -2,7 +2,7 @@
 
 Helps a clinic's privacy officer find and review inappropriate looks at patients' records. Code reads the record system's access log and flags accesses the clinic's rules call unusual; Claude explains each flagged case in plain words; the privacy officer decides. Every step is in an append-only audit log.
 
-**Status:** spec ([`docs/product/spec.md`](docs/product/spec.md), 34 acceptance criteria) and architecture ([`docs/architecture.md`](docs/architecture.md)) done; M1 (the made-up clinic, its FHIR server and the strict reader) built; M2 (flagging) next. See [`AGENTS.md`](AGENTS.md) for the phases.
+**Status:** spec ([`docs/product/spec.md`](docs/product/spec.md), 34 acceptance criteria) and architecture ([`docs/architecture.md`](docs/architecture.md)) done; M1 (the made-up clinic, its FHIR server and the strict reader) and M2 (flagging: all 31 planted cases found, each rule's precision measured) built; M3 (summaries) next. See [`AGENTS.md`](AGENTS.md) for the phases.
 
 The fourth of four healthcare projects, after [Lab Report Assistant](https://github.com/Enriquez-Johnmark/lab-report-assistant), [Care Reminders](https://github.com/Enriquez-Johnmark/care-reminders) and [Care Message Assistant](https://github.com/Enriquez-Johnmark/care-message-assistant). Made-up clinic, made-up staff and patients: this repository contains no real patient data and names no real company outside its research notes.
 
