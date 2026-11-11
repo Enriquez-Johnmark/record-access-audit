@@ -42,26 +42,60 @@ def current(db: Db, clock: Clock) -> RuleSet:
     ).fetchone()
     if row is not None:
         return _rules(int(cast(int, row["version"])), cast(dict[str, Any], row["settings"]))
-    with transaction(db):
-        db.execute(
-            "insert into rule_set_versions (version, settings, created_at, created_by)"
-            " values (1, %s, %s, %s) on conflict do nothing",
-            (Jsonb(_settings(DEFAULT_RULES)), clock.now(), SYSTEM),
-        )
-        record(
-            db,
-            at=clock.now(),
-            actor=SYSTEM,
-            action="rule_set.created",
-            subject_type="rule_set",
-            subject_id="1",
-            details=_settings(DEFAULT_RULES),
-        )
+    install_default(db, clock)
     return current(db, clock)
+
+
+def install_default(db: Db, clock: Clock) -> None:
+    """Makes the clinic's default rules version 1, recorded once, if there is no version yet."""
+    with transaction(db):
+        inserted = db.execute(
+            "insert into rule_set_versions (version, settings, created_at, created_by)"
+            " values (1, %s, %s, %s) on conflict do nothing returning version",
+            (Jsonb(_settings(DEFAULT_RULES)), clock.now(), SYSTEM),
+        ).fetchone()
+        if inserted is not None:
+            record(
+                db,
+                at=clock.now(),
+                actor=SYSTEM,
+                action="rule_set.created",
+                subject_type="rule_set",
+                subject_id="1",
+                details=_settings(DEFAULT_RULES),
+            )
+
+
+class RuleSetError(ValueError):
+    pass
+
+
+THRESHOLDS = {
+    "encounter_days": (0, 30),
+    "front_desk_days": (0, 90),
+    "billing_days": (1, 365),
+    "after_care_days": (1, 3650),
+    "shift_grace_minutes": (0, 720),
+    "high_volume_charts": (1, 10_000),
+}
+
+
+def check(rules: RuleSet) -> None:
+    """Refuses a rule set the rules can't run with."""
+    if set(rules.weights) != set(RuleCode):
+        raise RuleSetError("a rule set needs a weight for every rule")
+    for code, weight in rules.weights.items():
+        if not 1 <= weight <= 20:
+            raise RuleSetError(f"{code.value}'s weight must be between 1 and 20, not {weight}")
+    for name, (low, high) in THRESHOLDS.items():
+        value = getattr(rules, name)
+        if not low <= value <= high:
+            raise RuleSetError(f"{name} must be between {low} and {high}, not {value}")
 
 
 def add_version(db: Db, clock: Clock, actor: str, rules: RuleSet) -> RuleSet:
     """Saves `rules` as the next version; returns it with its number."""
+    check(rules)
     with transaction(db):
         db.execute("lock table rule_set_versions in exclusive mode")
         current(db, clock)
