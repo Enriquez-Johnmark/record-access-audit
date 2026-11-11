@@ -1,0 +1,42 @@
+# AGENTS.md
+
+**Record Access Audit** helps a clinic's privacy officer find and review inappropriate looks at patients' records: code reads the record system's access log and flags accesses the clinic's rules call unusual, Claude explains each flagged case in plain words from those facts alone, the privacy officer decides, and every step is in an append-only audit log. It works for any clinic; the demo uses a **made-up clinic with made-up staff and patients**, and the repository names no real company. Working name; it may be renamed.
+
+It is the fourth of four healthcare projects, each in its own repository: [Lab Report Assistant](https://github.com/Enriquez-Johnmark/lab-report-assistant), [Care Reminders](https://github.com/Enriquez-Johnmark/care-reminders), [Care Message Assistant](https://github.com/Enriquez-Johnmark/care-message-assistant) and the record-access audit (this one).
+
+## Phases
+
+Each gate needs the owner's explicit "yes"; an approval for one phase never carries into the next.
+
+| Phase | Status |
+| --- | --- |
+| 1. Research | **in progress** (started 2026-11-11, under the standing approval) |
+| 2. Brief | not started |
+| 3. Spec & acceptance criteria | not started |
+| 4. Architecture | not started |
+| 5. Build | not started |
+
+**No application code exists or gets written until the build is approved.**
+
+## Owner decisions
+
+Every decision needing the owner's judgement goes through the `grilling` skill: numbered rounds of questions, each with a recommended answer, worded so "yes" accepts it. Look facts up yourself, using sub-agents for research; put only decisions to the owner. Record every approved decision, dated, in `docs/decisions.md`.
+
+## Evidence
+
+Research claims carry a source (URL, publisher, date) and a confidence (H/M/L). Label vendor claims as vendor claims. When evidence is missing, write "not found"; a gap stays a gap. Keep facts, hypotheses, recommendations and owner-approved decisions visibly distinct.
+
+## Rules
+
+- **No real company, person or patient.** No real company's name, branding or content, and no real staff or patient data, anywhere in the repository, except that research documents may name real companies as cited sources.
+- **Code flags; the model explains; a person decides.** Which accesses are flagged is decided by the clinic's rules in code, never by a model. No case is closed and no one is named as having done wrong without the privacy officer's decision.
+- **Model output is untrusted.** Parsed into strict types and checked by rules before a person sees it.
+- **API key only.** The Claude API through the owner's key (`OWNER_ANTHROPIC_API_KEY`), never a Claude subscription; no data to free model tiers that train on inputs.
+- **No compliance claims.** The README never says "HIPAA compliant" or "certified".
+- **Language:** Python, with React pages (decided 2026-11-10).
+- **Report test results only from commands actually run.**
+- **Small commits** on `main`, each one change; messages imperative; no AI attribution trailers such as "Co-Authored-By" (owner's choice). Commits are signed with the owner's SSH key, so GitHub shows them as verified.
+
+## Working here
+
+- **Cloud sessions:** `scripts/cloud-session-start.sh` runs at session start (via `.claude/settings.json`) and sets up commit signing.
