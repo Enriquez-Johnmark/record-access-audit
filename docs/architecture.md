@@ -77,7 +77,7 @@ Read only through an injected `Clock`; ruff bans `datetime.now`, `datetime.utcno
 |---|---|---|---|
 | M1 | Data and FHIR: the generator and labels, HAPI FHIR, the strict reader, read-only client, the made-up check, the evidence pack, CI | A1, A3, H2, H3, J1 | done (2026-11-11) |
 | M2 | Flagging: accounting, the eleven rules, cases, the queue order, rule-set versions; recall and precision on the labelled log | B1–B5, I1 | done (2026-11-11) |
-| M3 | Summaries: the facts, the model client, recorded answers, the checks, the 30 bad summaries | A2, C1–C4, D1–D6, I2 | planned |
+| M3 | Summaries: the facts, the model client, recorded answers, the checks, the 30 bad summaries | A2, C1–C4, D1–D6, I2 | done (2026-11-11) |
 | M4 | Logins, decisions, the rules page and the activity log, with the privacy officer's pages | B6, E1–E4, G1–G3, H1 | planned |
 | M5 | The patient access report and measurement: Claude's recorded summaries, the report | A4, I3 | planned |
 | M6 | Showcase: README, screenshots, walkthrough video, portfolio page | none | planned |
