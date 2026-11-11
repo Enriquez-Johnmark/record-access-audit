@@ -74,4 +74,5 @@ export UV_SYSTEM_CERTS=1
 unset UV_NATIVE_TLS
 command -v uv >/dev/null || pip install -q "uv==0.11.32" >/dev/null 2>&1 || log "installing uv failed"
 uv sync -q || log "uv sync failed; the checks will not run"
+(cd web && pnpm install --frozen-lockfile >/tmp/cloud-session-start-web.log 2>&1) || log "pnpm install failed in web/"
 exit 0

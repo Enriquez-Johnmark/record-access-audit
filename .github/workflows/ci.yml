@@ -53,3 +53,97 @@ jobs:
         with:
           name: evidence-pack
           path: evidence.html
+
+  web:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: web/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - name: Lint and format
+        run: pnpm lint
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Test
+        run: pnpm test
+      - name: Build
+        run: pnpm build
+
+  # The privacy officer's journey in a browser, against the real server,
+  # Postgres, Mailpit and HAPI FHIR, summarising from recorded answers.
+  e2e:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: record_access
+          POSTGRES_PASSWORD: record_access
+          POSTGRES_DB: record_access
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U record_access" --health-interval 2s --health-retries 30
+      mailpit:
+        image: axllent/mailpit:v1.27.11
+        ports:
+          - 8025:8025
+      hapi:
+        image: hapiproject/hapi:v8.4.0-1
+        ports:
+          - 8090:8080
+    env:
+      DATABASE_URL: postgresql://record_access:record_access@localhost:5432/record_access
+      FHIR_URL: http://127.0.0.1:8090/fhir
+      MAILPIT_URL: http://127.0.0.1:8025
+      PUBLIC_BASE_URL: http://127.0.0.1:8000
+      BIND_ADDR: 127.0.0.1:8000
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install --user "uv==0.11.32"
+      - run: uv sync --locked
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: web/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+      - name: Build the app
+        working-directory: web
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+          # The runner image already has Chromium's libraries; the extra
+          # system packages come from Ubuntu's mirror, which can be
+          # unreachable, so they are tried for two minutes at most.
+          timeout 120 pnpm exec playwright install-deps chromium || echo "::warning::couldn't install Chromium's extra system packages; trying without them"
+          pnpm exec playwright install chromium
+      - name: Start with the made-up clinic loaded into HAPI FHIR
+        run: |
+          for _ in $(seq 1 90); do curl -sf "$FHIR_URL/metadata" >/dev/null && break; sleep 2; done
+          uv run record-access-audit migrate
+          uv run record-access-audit add-user --email privacy@clinic.example.test --name "Alex Example" --role "privacy officer"
+          uv run record-access-audit add-user --email admin@clinic.example.test --name "Example Administrator" --role administrator
+          uv run record-access-audit load-made-up
+          nohup uv run record-access-audit serve --recorded > server.log 2>&1 &
+          for _ in $(seq 1 30); do curl -sf http://127.0.0.1:8000/health >/dev/null && break; sleep 1; done
+      - name: Browser tests
+        working-directory: web
+        run: pnpm e2e --trace off
+        env:
+          E2E_BASE_URL: http://127.0.0.1:8000
+      - name: Server log
+        if: failure()
+        run: cat server.log

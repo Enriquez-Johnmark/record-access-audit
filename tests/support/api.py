@@ -41,5 +41,5 @@ def api(db_url: str, clock: Clock, model: Summariser | None = None) -> tuple[Tes
 
 def log_in(client: TestClient, mail: KeptMail, email: str) -> None:
     assert client.post("/api/login", json={"email": email}).status_code == 204
-    response = client.get(mail.link_for(email))
-    assert response.status_code == 303
+    response = client.post("/api" + mail.link_for(email))
+    assert response.status_code == 200

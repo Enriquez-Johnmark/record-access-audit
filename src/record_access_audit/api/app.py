@@ -11,7 +11,7 @@ from urllib.parse import urlparse
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool
@@ -159,6 +159,10 @@ def create_app(
         response.headers["Referrer-Policy"] = "same-origin"
         return response
 
+    @app.get("/health")
+    def health() -> dict[str, str]:
+        return {"status": "ok"}
+
     @app.post("/api/login", status_code=204)
     def login(body: LoginBody, db: DbDep) -> Response:
         # A mail failure must not reveal whether the address is known.
@@ -166,13 +170,15 @@ def create_app(
             request_link(db, clock, mailer or _no_mail, body.email, config.base_url)
         return Response(status_code=204)
 
-    @app.get("/login/{token}")
+    @app.post("/api/login/{token}")
     def use_login_link(token: str, db: DbDep) -> Response:
+        # Only this POST, from the page the link opens, uses the link: an email
+        # scanner that opens the link can't use it up.
         used = use_link(db, clock, token)
         if used is None:
-            return RedirectResponse("/login?expired=1", status_code=303)
+            raise HTTPException(400, "This login link has expired or has already been used. Get a new one.")
         secret, session = used
-        response = RedirectResponse("/" if session.who == "user" else "/report", status_code=303)
+        response = JSONResponse({"who": session.who})
         response.set_cookie(
             COOKIE,
             secret,
@@ -204,7 +210,7 @@ def create_app(
                 "staff": names["staff"][row.staff],
                 "patient": names["patients"].get(row.patient) if row.patient else None,
                 "day": row.day,
-                "rules": row.codes,
+                "rules": sorted(row.codes, key=lambda code: list(RuleCode).index(RuleCode(code))),
                 "score": row.score,
                 "age_days": row.age_days,
                 "first_look": row.first_access_at,

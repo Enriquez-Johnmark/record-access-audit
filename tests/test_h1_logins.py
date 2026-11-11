@@ -16,17 +16,22 @@ def test_h1_a_login_link_works_once_and_only_for_15_minutes(db: Db, db_url: str)
     client, mail = api(db_url, clock)
     assert client.post("/api/login", json={"email": OFFICER_EMAIL.upper()}).status_code == 204
     link = mail.link_for(OFFICER_EMAIL)
-    first = client.get(link)
-    assert first.status_code == 303
-    assert first.headers["location"] == "/"
+    assert link.startswith("/login/")
+    # Opening the link uses nothing; only the page's button (a POST) does.
+    client.get(link)
+    first = client.post("/api" + link)
+    assert first.status_code == 200
+    assert first.json() == {"who": "user"}
     assert "raa_session" in first.cookies
     assert client.get("/api/me").json()["email"] == OFFICER_EMAIL
     client.cookies.clear()
-    assert client.get(link).headers["location"] == "/login?expired=1"
+    again = client.post("/api" + link)
+    assert again.status_code == 400
+    assert "expired or has already been used" in again.json()["detail"]
     client.post("/api/login", json={"email": OFFICER_EMAIL})
     late = mail.link_for(OFFICER_EMAIL)
     clock.at += timedelta(minutes=16)
-    assert client.get(late).headers["location"] == "/login?expired=1"
+    assert client.post("/api" + late).status_code == 400
 
 
 def test_h1_the_login_form_says_the_same_whether_or_not_the_address_is_known(db: Db, db_url: str) -> None:

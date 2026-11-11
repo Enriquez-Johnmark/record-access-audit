@@ -8,3 +8,5 @@ node_modules/
 coverage
 test-results.*
 evidence.html
+test-results.xml
+server.log
