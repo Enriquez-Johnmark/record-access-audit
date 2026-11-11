@@ -85,3 +85,33 @@ def test_d6_every_problem_names_its_check_what_it_found_and_where() -> None:
         (Check.ACCUSES, "breach", "to check 1"),
     ]
     assert all(p.check.description for p in problems)
+
+
+def test_d2_times_without_a_leading_zero_and_numbers_joined_to_letters_are_still_checked() -> None:
+    assert found(summary(("S-009 opened the chart at 11:20 and 9:50.", [2]))) == [
+        (Check.NOT_IN_FACTS, "9:50")
+    ]
+    facts = [*FACTS, "At 2026-10-22 09:50, S-009 opened P-286's chart (notes) for 60 seconds."]
+    assert [p.found for p in check(summary(("S-009 opened the chart at 9:50.", [6])), facts)] == []
+    assert found(summary(("S-009 opened the chart a 3rd time.", [2]))) == [(Check.NOT_IN_FACTS, "3rd")]
+    assert found(summary(("S009 opened the chart.", [4]))) == [(Check.NOT_IN_FACTS, "S009")]
+    assert found(summary(("S009 opened the chart.", [2]))) == []
+
+
+def test_d2_one_as_a_word_is_not_read_as_a_count() -> None:
+    assert found(summary(("One possible reason is that no one recorded S-009's visit.", [1]))) == []
+    assert found(summary(("S-009 opened the chart twice.", [2]))) == [(Check.NOT_IN_FACTS, "twice")]
+
+
+def test_d3_phrases_that_decide_without_a_listed_word_are_blocked() -> None:
+    for text, phrase in [
+        ("S-009 had no legitimate reason to open the chart.", "no legitimate reason"),
+        ("S-009 opened the chart without authorization.", "without authorization"),
+        ("The look was not permitted.", "not permitted"),
+        ("The look was unjustified.", "unjustified"),
+    ]:
+        assert found(summary((text, [2]))) == [(Check.ACCUSES, phrase)]
+
+
+def test_d4_aids_as_a_verb_is_not_a_clinical_word() -> None:
+    assert found(summary(("This aids the review of S-009's look.", [2]))) == []

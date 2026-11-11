@@ -35,12 +35,12 @@ class Problem:
     where: str
 
 
-# IDs (S-009, P-286, A-01660), dates, times, then plain numbers.
-TOKENS = re.compile(r"\b(?:[SPA]-\d+|\d{4}-\d{2}-\d{2}|\d{1,2}:\d{2}|\d+(?:\.\d+)?)\b")
+# IDs (S-009, P-286, A-01660, also written S009), dates, times, then numbers,
+# including those joined to letters (3rd, 2x).
+TOKENS = re.compile(r"\b(?:[SPA]-?\d{3,5}|\d{4}-\d{2}-\d{2}|\d{1,2}:\d{2}|\d+(?:\.\d+)?(?:st|nd|rd|th|x)?)\b")
+# "one" and "once" are left out: "no one" and "one possible reason" are not counts.
 NUMBER_WORDS = {
-    "once": "1",
     "twice": "2",
-    "one": "1",
     "two": "2",
     "three": "3",
     "four": "4",
@@ -61,20 +61,19 @@ NUMBER_WORDS = {
     "nineteen": "19",
     "twenty": "20",
     "dozen": "12",
-    "dozens": "24",
-    "hundred": "100",
-    "hundreds": "200",
 }
 WORDS = re.compile(r"\b(" + "|".join(NUMBER_WORDS) + r")\b", re.IGNORECASE)
 
 ACCUSING = re.compile(
     r"\b(violat\w*|snoop\w*|breach\w*|unauthori[sz]ed|inappropriat\w*|improper\w*|illegal\w*|unlawful\w*"
     r"|guilt\w*|misconduct|wrongdoing|fired|firing|disciplin\w*|culprit\w*|criminal\w*|suspicious\w*"
-    r"|abus\w*|prying|nosy|spying|spied|offen[cs]e\w*|punish\w*|sanction\w*)\b",
+    r"|abus\w*|prying|nosy|spying|spied|offen[cs]e\w*|punish\w*|sanction\w*|unjustified|unwarranted"
+    r"|no (?:legitimate|valid|good|business|work|clinical) reason|without (?:authori[sz]ation|permission)"
+    r"|not (?:permitted|allowed|authori[sz]ed)|against (?:the )?(?:policy|rules))\b",
     re.IGNORECASE,
 )
 CLINICAL = re.compile(
-    r"\b(diagnos\w*|disease\w*|illness\w*|conditions?|symptom\w*|cancer\w*|tumou?r\w*|diabet\w*|hiv|aids"
+    r"\b(diagnos\w*|disease\w*|illness\w*|conditions?|symptom\w*|cancer\w*|tumou?r\w*|diabet\w*|hiv"
     r"|hepatitis|pregnan\w*|abortion\w*|depress\w*|anxiety|psychiatr\w*|mental health|addiction\w*"
     r"|overdos\w*|opioid\w*|insulin|metformin|lisinopril|statins?|antibiotic\w*|chemotherapy|prescri\w*"
     r"|doses?|dosage\w*|blood pressure|cholesterol|glucose|a1c|biops\w*|x-rays?|mri|surger\w*|infection\w*"
@@ -83,8 +82,17 @@ CLINICAL = re.compile(
 )
 
 
+def _normal(token: str) -> str:
+    """One spelling per token: S009 -> S-009, 9:50 -> 09:50, 3rd -> 3."""
+    if re.fullmatch(r"[SPA]\d+", token):
+        return f"{token[0]}-{token[1:]}"
+    if re.fullmatch(r"\d:\d{2}", token):
+        return f"0{token}"
+    return re.sub(r"(st|nd|rd|th|x)$", "", token) if token[0].isdigit() else token
+
+
 def _tokens(text: str) -> set[str]:
-    return set(TOKENS.findall(text))
+    return {_normal(t) for t in TOKENS.findall(text)}
 
 
 def _sentence(sentence: Sentence, where: str, facts: list[str]) -> list[Problem]:
@@ -99,7 +107,7 @@ def _sentence(sentence: Sentence, where: str, facts: list[str]) -> list[Problem]
         for n in sentence.facts:
             cited |= _tokens(facts[n - 1])
         for token in TOKENS.findall(sentence.text):
-            if token not in cited:
+            if _normal(token) not in cited:
                 problems.append(Problem(Check.NOT_IN_FACTS, token, where))
                 break
         else:
