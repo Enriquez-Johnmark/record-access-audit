@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Evidence pack</title><style>body{font:16px/1.5 system-ui,sans-serif;margin:2rem auto;max-width:72rem;padding:0 1rem}table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #ccc;padding:.4rem;text-align:left;vertical-align:top}</style></head><body>
+<h1>Evidence pack</h1>
+<p>Record Access Audit, commit <code>9e99224</code>. 5 of 34 acceptance criteria proven. Made-up clinic, made-up staff and patients.</p>
+<table>
+<tr><th>Criterion</th><th>Milestone</th><th>Tests</th><th>Status</th></tr>
+<tr><td><b>A1</b> The made-up data is the same every time: 30 staff, 300 patients and the 14-day log, valid FHIR R4, each resource marked as test data, with every planted case and look-alike labelled.</td><td>M1</td><td>✓ tests.test_a1_fhir::test_a1_every_resource_is_marked_as_test_data_and_tagged_with_the_clinic<br>✓ tests.test_a1_fhir::test_a1_the_clinic_is_written_as_the_seven_resource_types<br>✓ tests.test_a1_fhir::test_a1_a_chart_opened_is_a_balp_patient_read_and_a_search_a_patient_query<br>✓ tests.test_a1_made_up_data::test_a1_the_made_up_clinic_is_the_same_every_time<br>✓ tests.test_a1_made_up_data::test_a1_the_clinic_has_30_staff_300_patients_and_14_days_of_log<br>✓ tests.test_a1_made_up_data::test_a1_every_planted_kind_and_enough_look_alikes_are_labelled<br>✓ tests.test_a1_made_up_data::test_a1_every_label_names_people_and_accesses_in_the_log<br>✓ tests.test_a1_made_up_data::test_a1_the_committed_labels_are_the_generated_ones<br>✓ tests.test_a1_made_up_data::test_a1_a_chart_opened_after_a_patients_death_is_always_a_labelled_case</td><td>proven</td></tr>
+<tr><td><b>A2</b> A request to the model carries no name, address, date of birth or clinical content: only numbered facts with pseudonymous IDs.</td><td>M3</td><td></td><td>not yet due</td></tr>
+<tr><td><b>A3</b> CI fails if the repository names a real company outside research documents, or holds FHIR not marked as test data.</td><td>M1</td><td>✓ tests.test_a3_made_up::test_a3_the_repository_itself_passes<br>✓ tests.test_a3_made_up::test_a3_a_real_company_outside_the_research_is_found_inside_it_is_allowed<br>✓ tests.test_a3_made_up::test_a3_a_fhir_resource_not_marked_as_test_data_is_found<br>✓ tests.test_a3_made_up::test_a3_arrays_ndjson_and_a_broken_meta_are_checked_too</td><td>proven</td></tr>
+<tr><td><b>A4</b> A patient sees only their own access report, with roles and departments and never a staff name.</td><td>M5</td><td></td><td>not yet due</td></tr>
+<tr><td><b>B1</b> An access accounted for by a care team, an encounter, an appointment or the role&#x27;s work raises no flag from the rules that apply only to unaccounted accesses.</td><td>M2</td><td></td><td>not yet due</td></tr>
+<tr><td><b>B2</b> Each rule fires on its planted cases and not on accesses outside its terms; every flag records its reason code and rule-set version.</td><td>M2</td><td></td><td>not yet due</td></tr>
+<tr><td><b>B3</b> A search-list hit never raises a case, and is shown as a search-list hit, never as an opened chart.</td><td>M2</td><td></td><td>not yet due</td></tr>
+<tr><td><b>B4</b> Running the rules again raises no new flags; a new rule-set version never rewrites a past flag; a flag after a decision opens a new case.</td><td>M2</td><td></td><td>not yet due</td></tr>
+<tr><td><b>B5</b> The queue is ordered by rule weight, then age, with no model involved; an open case is never hidden or closed automatically.</td><td>M2</td><td></td><td>not yet due</td></tr>
+<tr><td><b>B6</b> Only the privacy officer changes the rule set; each change makes a new version with its thresholds and weights.</td><td>M4</td><td></td><td>not yet due</td></tr>
+<tr><td><b>C1</b> The model sees only the case&#x27;s numbered facts; each summary records the model and the facts it was given.</td><td>M3</td><td></td><td>not yet due</td></tr>
+<tr><td><b>C2</b> The model&#x27;s answers are parsed into strict types; an answer that doesn&#x27;t parse leaves the case with its facts and no summary.</td><td>M3</td><td></td><td>not yet due</td></tr>
+<tr><td><b>C3</b> With no model, every case is still flagged, ordered and shown with its facts.</td><td>M3</td><td></td><td>not yet due</td></tr>
+<tr><td><b>C4</b> A summary never changes which cases are flagged or their order.</td><td>M3</td><td></td><td>not yet due</td></tr>
+<tr><td><b>D1</b> A summary sentence citing no fact, or a fact the case doesn&#x27;t have, is blocked.</td><td>M3</td><td></td><td>not yet due</td></tr>
+<tr><td><b>D2</b> A number, time or ID not in the cited facts is blocked.</td><td>M3</td><td></td><td>not yet due</td></tr>
+<tr><td><b>D3</b> Deciding or accusing words are blocked.</td><td>M3</td><td></td><td>not yet due</td></tr>
+<tr><td><b>D4</b> Clinical words are blocked.</td><td>M3</td><td></td><td>not yet due</td></tr>
+<tr><td><b>D5</b> A summary over 120 words is blocked.</td><td>M3</td><td></td><td>not yet due</td></tr>
+<tr><td><b>D6</b> Every blocked summary shows which check failed and what it found, and the case shows its facts instead.</td><td>M3</td><td></td><td>not yet due</td></tr>
+<tr><td><b>E1</b> Only the privacy officer can decide a case.</td><td>M4</td><td></td><td>not yet due</td></tr>
+<tr><td><b>E2</b> A decision is one of the three outcomes with a written reason of at least 10 characters.</td><td>M4</td><td></td><td>not yet due</td></tr>
+<tr><td><b>E3</b> A later decision adds to the case&#x27;s history and never replaces an earlier one.</td><td>M4</td><td></td><td>not yet due</td></tr>
+<tr><td><b>E4</b> Each open case shows its age; a possible-breach case shows its 60-day reminder, labelled as not legal advice.</td><td>M4</td><td></td><td>not yet due</td></tr>
+<tr><td><b>G1</b> Every step is logged with who and when.</td><td>M4</td><td></td><td>not yet due</td></tr>
+<tr><td><b>G2</b> The log is append-only: the database refuses to change or delete an entry.</td><td>M4</td><td></td><td>not yet due</td></tr>
+<tr><td><b>G3</b> Each case has its timeline, and the whole log can be filtered by person and step.</td><td>M4</td><td></td><td>not yet due</td></tr>
+<tr><td><b>H1</b> Staff and patients log in with an emailed link; every staff API needs the right role and every patient API a patient login.</td><td>M4</td><td></td><td>not yet due</td></tr>
+<tr><td><b>H2</b> The log and the clinic&#x27;s records are read from the FHIR server through a strict reader; a resource it can&#x27;t read is refused with the reason, and the others are taken in.</td><td>M1</td><td>✓ tests.test_h2_reader::test_h2_the_clinic_reads_back_whole_from_its_fhir_resources<br>✓ tests.test_h2_reader::test_h2_a_resource_it_cannot_read_is_refused_with_the_reason_and_the_rest_taken_in<br>✓ tests.test_h2_reader::test_h2_the_saved_clinic_facts_are_the_generated_ones<br>✓ tests.test_h2_reader::test_h2_the_clinic_loaded_into_hapi_is_read_back_whole<br>✓ tests.test_h2_reader::test_h2_wrong_ids_types_and_empty_lists_are_refused_one_resource_at_a_time<br>✓ tests.test_h3_read_only::test_h2_pages_that_repeat_or_point_elsewhere_are_refused</td><td>proven</td></tr>
+<tr><td><b>H3</b> The tool never writes to the FHIR server; only the loading command does, and it accepts only a server on this computer.</td><td>M1</td><td>✓ tests.test_h3_read_only::test_h3_the_tools_fhir_client_only_ever_reads<br>✓ tests.test_h3_read_only::test_h3_the_loader_accepts_only_a_server_on_this_computer</td><td>proven</td></tr>
+<tr><td><b>I1</b> Every planted case in the labelled log is flagged; the report gives recall and precision per rule and the share of chart opens accounted for.</td><td>M2</td><td></td><td>not yet due</td></tr>
+<tr><td><b>I2</b> All 30 bad summaries are blocked, each by the check it was written to trip.</td><td>M3</td><td></td><td>not yet due</td></tr>
+<tr><td><b>I3</b> At least 90% of Claude&#x27;s recorded summaries pass, and the report lists every one that didn&#x27;t.</td><td>M5</td><td></td><td>not yet due</td></tr>
+<tr><td><b>J1</b> The evidence pack links each acceptance criterion to its passing tests; CI fails if a finished milestone&#x27;s criterion has none.</td><td>M1</td><td>✓ tests.test_j1_evidence::test_j1_links_each_criterion_to_its_passing_tests_by_the_tests_name<br>✓ tests.test_j1_evidence::test_j1_a_finished_milestones_criterion_with_no_passing_test_is_a_gap<br>✓ tests.test_j1_evidence::test_j1_every_criterion_in_the_spec_is_in_a_milestone<br>✓ tests.test_j1_evidence::test_j1_reads_pytests_junit_results<br>✓ tests.test_j1_evidence::test_j1_a_skipped_test_neither_proves_nor_fails_a_criterion</td><td>proven</td></tr>
+</table>
+</body></html>
