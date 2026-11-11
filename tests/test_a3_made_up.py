@@ -47,3 +47,24 @@ def test_a3_a_fhir_resource_not_marked_as_test_data_is_found(tmp_path: Path) -> 
         "demo/bundle.json: a FHIR resource not marked as test data (HTEST)",
         "demo/patient.json: a FHIR resource not marked as test data (HTEST)",
     ]
+
+
+def test_a3_arrays_ndjson_and_a_broken_meta_are_checked_too(tmp_path: Path) -> None:
+    patient = {"resourceType": "Patient", "id": "x"}
+    marked = {"resourceType": "Patient", "id": "y", "meta": {"security": [TEST_DATA]}}
+    root = folder(
+        tmp_path,
+        {
+            "demo/array.json": json.dumps([marked, patient]),
+            "demo/bulk.ndjson": json.dumps(marked) + "\n" + json.dumps(patient) + "\n",
+            "demo/fine.ndjson": json.dumps(marked) + "\n",
+            "demo/meta.json": json.dumps({"resourceType": "Patient", "meta": []}),
+            "demo/security.json": json.dumps({"resourceType": "Patient", "meta": {"security": "HTEST"}}),
+        },
+    )
+    assert problems(root) == [
+        "demo/array.json: a FHIR resource not marked as test data (HTEST)",
+        "demo/bulk.ndjson: a FHIR resource not marked as test data (HTEST)",
+        "demo/meta.json: a FHIR resource not marked as test data (HTEST)",
+        "demo/security.json: a FHIR resource not marked as test data (HTEST)",
+    ]

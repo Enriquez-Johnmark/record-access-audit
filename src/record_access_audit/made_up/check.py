@@ -70,7 +70,9 @@ def problems(root: Path) -> list[str]:
             text = path.read_text(encoding="utf-8")
         except (UnicodeDecodeError, OSError):
             continue
-        if shown.endswith(".json") and not _marked_as_test_data(text):
+        if shown.endswith((".json", ".ndjson")) and not _marked_as_test_data(
+            text, ndjson=shown.endswith(".ndjson")
+        ):
             found.append(f"{shown}: a FHIR resource not marked as test data (HTEST)")
         if shown.startswith(RESEARCH):
             continue
@@ -92,25 +94,42 @@ def _files(folder: Path) -> list[Path]:
     return files
 
 
-def _marked_as_test_data(text: str) -> bool:
-    """Whether a JSON file is either not FHIR or FHIR whose every resource
-    carries the test-data label."""
+def _marked_as_test_data(text: str, *, ndjson: bool) -> bool:
+    """Whether a JSON (or NDJSON) file is either not FHIR or FHIR whose every
+    resource carries the test-data label."""
     try:
-        value = json.loads(text)
+        values = (
+            [json.loads(line) for line in text.splitlines() if line.strip()] if ndjson else [json.loads(text)]
+        )
     except ValueError:
         return True
-    return all(TEST_DATA in resource.get("meta", {}).get("security", []) for resource in _resources(value))
+    return all(_labelled(resource) for value in values for resource in _resources(value))
+
+
+def _labelled(resource: dict[str, Any]) -> bool:
+    meta = resource.get("meta")
+    security = cast(dict[str, Any], meta).get("security") if isinstance(meta, dict) else None
+    return isinstance(security, list) and TEST_DATA in cast(list[Any], security)
 
 
 def _resources(value: Any) -> list[dict[str, Any]]:
+    if isinstance(value, list):
+        return [r for item in cast(list[Any], value) for r in _resources(item)]
     if not isinstance(value, dict):
         return []
     record = cast(dict[str, Any], value)
     if not isinstance(record.get("resourceType"), str):
         return []
     if record["resourceType"] == "Bundle":
-        entries = cast(list[dict[str, Any]], record.get("entry", []))
-        return [r for entry in entries for r in _resources(entry.get("resource"))]
+        entries = record.get("entry", [])
+        if not isinstance(entries, list):
+            return []
+        return [
+            r
+            for entry in cast(list[Any], entries)
+            if isinstance(entry, dict)
+            for r in _resources(cast(dict[str, Any], entry).get("resource"))
+        ]
     return [record]
 
 
