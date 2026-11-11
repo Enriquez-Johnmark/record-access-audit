@@ -4,6 +4,7 @@ from typing import LiteralString, cast
 import psycopg
 import pytest
 
+from record_access_audit import audit_run
 from record_access_audit.audit_run import fetch_and_run, run_rules
 from record_access_audit.clock import FixedClock
 from record_access_audit.core.rules import DEFAULT_RULES, RuleCode
@@ -130,3 +131,15 @@ def test_b4_the_database_refuses_to_change_or_remove_a_flag_case_or_rule_set_ver
     ]:
         with pytest.raises(psycopg.errors.RaiseException, match="append-only"):
             db.execute(sql)  # type: ignore[arg-type]
+
+
+def test_b4_storing_the_log_and_recording_it_happen_together_or_not_at_all(
+    db: Db, loaded_fhir: FhirServer, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def broken(*_: object, **__: object) -> None:
+        raise RuntimeError("the activity log is down")
+
+    monkeypatch.setattr(audit_run, "record", broken)
+    with pytest.raises(RuntimeError):
+        fetch_and_run(db, FixedClock(NOW), loaded_fhir, FACTS)
+    assert count(db, "select count(*) as n from accesses") == 0

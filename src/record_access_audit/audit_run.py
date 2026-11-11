@@ -108,16 +108,20 @@ class FetchResult:
 def fetch_and_run(
     db: Db, clock: Clock, server: FhirServer, facts: ClinicFacts, actor: str = SYSTEM
 ) -> FetchResult:
-    """Reads the clinic from its FHIR server, stores what is new, and runs the rules."""
+    """Reads the clinic from its FHIR server, then stores what is new, records
+    it and runs the rules, all in one transaction under the run lock."""
     result = read(server.fetch_clinic(), facts)
-    new = save_clinic(db, result.clinic)
-    record(
-        db,
-        at=clock.now(),
-        actor=actor,
-        action="log.loaded",
-        subject_type="fhir",
-        subject_id=server.base_url,
-        details={"new_accesses": new, "refused": [f"{r.resource}: {r.reason}" for r in result.refused]},
-    )
-    return FetchResult(result.refused, new, run_rules(db, clock, facts, actor))
+    with transaction(db):
+        db.execute("select pg_advisory_xact_lock(%s)", (RUN_LOCK,))
+        new = save_clinic(db, result.clinic)
+        record(
+            db,
+            at=clock.now(),
+            actor=actor,
+            action="log.loaded",
+            subject_type="fhir",
+            subject_id=server.base_url,
+            details={"new_accesses": new, "refused": [f"{r.resource}: {r.reason}" for r in result.refused]},
+        )
+        run = run_rules(db, clock, facts, actor)
+    return FetchResult(result.refused, new, run)
