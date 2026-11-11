@@ -115,3 +115,12 @@ def test_d3_phrases_that_decide_without_a_listed_word_are_blocked() -> None:
 
 def test_d4_aids_as_a_verb_is_not_a_clinical_word() -> None:
     assert found(summary(("This aids the review of S-009's look.", [2]))) == []
+
+
+def test_d2_the_cases_own_staff_member_and_patient_may_be_named_in_any_sentence() -> None:
+    case = frozenset({"S-009", "P-286"})
+    line = summary(("Check for a visit with P-286 that the record does not show.", [5]))
+    assert [p.found for p in check(line, FACTS, case_ids=case)] == []
+    assert [p.found for p in check(line, FACTS)] == ["P-286"]
+    other = summary(("Check for a visit with P-287 that the record does not show.", [5]))
+    assert [p.found for p in check(other, FACTS, case_ids=case)] == ["P-287"]

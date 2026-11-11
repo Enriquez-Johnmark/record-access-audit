@@ -82,10 +82,11 @@ def _store(
     request: SummaryRequest,
     raw: str,
     facts: list[str],
+    case_ids: frozenset[str],
     actor: str,
 ) -> Status:
     summary = parse_summary(raw)
-    problems = check(summary, facts) if summary is not None else []
+    problems = check(summary, facts, case_ids) if summary is not None else []
     status: Status = "unreadable" if summary is None else "blocked" if problems else "shown"
     with transaction(db):
         db.execute(
@@ -166,7 +167,9 @@ def summarise_open(
             )
             counts["failed"] += 1
             continue
-        counts[_store(db, clock, case_id, model.model, request, raw, case_facts_now, actor)] += 1
+        key, _ = _case(db, case_id)
+        case_ids = frozenset(i for i in (key.staff, key.patient) if i)
+        counts[_store(db, clock, case_id, model.model, request, raw, case_facts_now, case_ids, actor)] += 1
     return dict(counts)
 
 

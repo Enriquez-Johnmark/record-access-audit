@@ -95,7 +95,7 @@ def _tokens(text: str) -> set[str]:
     return {_normal(t) for t in TOKENS.findall(text)}
 
 
-def _sentence(sentence: Sentence, where: str, facts: list[str]) -> list[Problem]:
+def _sentence(sentence: Sentence, where: str, facts: list[str], case_ids: frozenset[str]) -> list[Problem]:
     problems: list[Problem] = []
     bad = [n for n in sentence.facts if not 1 <= n <= len(facts)]
     if not sentence.facts:
@@ -103,7 +103,9 @@ def _sentence(sentence: Sentence, where: str, facts: list[str]) -> list[Problem]
     elif bad:
         problems.append(Problem(Check.CITES_NO_FACT, f"fact {bad[0]}", where))
     else:
-        cited: set[str] = set()
+        # The case's own staff member and patient are its subject: naming them
+        # can't point at the wrong person, whichever fact a sentence cites.
+        cited: set[str] = set(case_ids)
         for n in sentence.facts:
             cited |= _tokens(facts[n - 1])
         for token in TOKENS.findall(sentence.text):
@@ -124,13 +126,14 @@ def _sentence(sentence: Sentence, where: str, facts: list[str]) -> list[Problem]
     return problems
 
 
-def check(summary: Summary, facts: list[str]) -> list[Problem]:
-    """Every problem with `summary` against the case's numbered `facts` (fact 1 is `facts[0]`)."""
+def check(summary: Summary, facts: list[str], case_ids: frozenset[str] = frozenset()) -> list[Problem]:
+    """Every problem with `summary` against the case's numbered `facts` (fact 1
+    is `facts[0]`); `case_ids` are the case's own staff member and patient."""
     problems: list[Problem] = []
     for n, sentence in enumerate(summary.summary, start=1):
-        problems += _sentence(sentence, f"summary sentence {n}", facts)
+        problems += _sentence(sentence, f"summary sentence {n}", facts, case_ids)
     for n, sentence in enumerate(summary.to_check, start=1):
-        problems += _sentence(sentence, f"to check {n}", facts)
+        problems += _sentence(sentence, f"to check {n}", facts, case_ids)
     words = sum(len(s.text.split()) for s in [*summary.summary, *summary.to_check])
     if words > MAX_WORDS:
         problems.append(Problem(Check.TOO_LONG, f"{words} words", "the summary"))
