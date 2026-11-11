@@ -1,0 +1,1029 @@
+{
+  "made_up": "Every fact and summary here is made up, about made-up staff and patients.",
+  "summaries": [
+    {
+      "id": "BS01",
+      "trips": "cites-no-fact",
+      "facts": [
+        "Staff member S-009 is a nurse in Family Medicine; their shift is 08:00 to 17:00.",
+        "Patient P-286 lives at S-009's home address.",
+        "At 2026-10-21 11:20, S-009 opened P-286's chart (summary) for 182 seconds.",
+        "At 2026-10-21 11:24, S-009 opened P-286's chart (notes) for 95 seconds.",
+        "In all, S-009 opened P-286's chart 2 times, between 2026-10-21 11:20 and 2026-10-21 11:24.",
+        "Rule NO_RELATIONSHIP raised this case: no care team, visit, appointment or the role's work accounts for the look.",
+        "Rule SAME_ADDRESS raised this case: the patient lives at the staff member's home address."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "S-009 opened P-286's chart 2 times on 2026-10-21.",
+            "facts": [
+              5
+            ]
+          },
+          {
+            "text": "The patient lives at the nurse's address.",
+            "facts": []
+          }
+        ],
+        "to_check": []
+      },
+      "note": "a sentence with no facts"
+    },
+    {
+      "id": "BS02",
+      "trips": "cites-no-fact",
+      "facts": [
+        "Staff member S-009 is a nurse in Family Medicine; their shift is 08:00 to 17:00.",
+        "Patient P-286 lives at S-009's home address.",
+        "At 2026-10-21 11:20, S-009 opened P-286's chart (summary) for 182 seconds.",
+        "At 2026-10-21 11:24, S-009 opened P-286's chart (notes) for 95 seconds.",
+        "In all, S-009 opened P-286's chart 2 times, between 2026-10-21 11:20 and 2026-10-21 11:24.",
+        "Rule NO_RELATIONSHIP raised this case: no care team, visit, appointment or the role's work accounts for the look.",
+        "Rule SAME_ADDRESS raised this case: the patient lives at the staff member's home address."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "S-009 opened P-286's chart 2 times on 2026-10-21.",
+            "facts": [
+              9
+            ]
+          }
+        ],
+        "to_check": []
+      },
+      "note": "cites fact 9 of 7"
+    },
+    {
+      "id": "BS03",
+      "trips": "cites-no-fact",
+      "facts": [
+        "Staff member S-006 is a physician in Urgent Care; their shift is 07:00 to 19:00.",
+        "Patient P-118 is on the clinic's VIP list.",
+        "At 2026-10-22 09:50, S-006 opened P-118's chart (summary) for 240 seconds.",
+        "In all, S-006 opened P-118's chart 1 time, at 2026-10-22 09:50.",
+        "Rule VIP raised this case: the patient is on the clinic's VIP list.",
+        "No care team, visit or appointment links S-006 and P-118 in the 90 days before the look."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "S-006 opened the chart of P-118, a VIP.",
+            "facts": [
+              1,
+              2,
+              3
+            ]
+          }
+        ],
+        "to_check": [
+          {
+            "text": "Whether the look was part of a visit.",
+            "facts": []
+          }
+        ]
+      },
+      "note": "a 'to check' line with no facts"
+    },
+    {
+      "id": "BS04",
+      "trips": "cites-no-fact",
+      "facts": [
+        "Staff member S-006 is a physician in Urgent Care; their shift is 07:00 to 19:00.",
+        "Patient P-118 is on the clinic's VIP list.",
+        "At 2026-10-22 09:50, S-006 opened P-118's chart (summary) for 240 seconds.",
+        "In all, S-006 opened P-118's chart 1 time, at 2026-10-22 09:50.",
+        "Rule VIP raised this case: the patient is on the clinic's VIP list.",
+        "No care team, visit or appointment links S-006 and P-118 in the 90 days before the look."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "S-006 opened P-118's chart once.",
+            "facts": [
+              0
+            ]
+          }
+        ],
+        "to_check": []
+      },
+      "note": "cites fact 0"
+    },
+    {
+      "id": "BS05",
+      "trips": "cites-no-fact",
+      "facts": [
+        "Staff member S-023 works in billing in Administration; their shift is 08:00 to 17:00.",
+        "On 2026-10-29, S-023 opened the charts of 75 different patients, between 09:00 and 13:56.",
+        "On the other days in the log, S-023 opened the charts of at most 18 patients a day.",
+        "Rule HIGH_VOLUME raised this case: the staff member opened an unusual number of charts that day.",
+        "Each of the 75 charts belongs to a patient with a visit in the 90 days before, which billing's work accounts for."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "S-023 opened 75 patients' charts on 2026-10-29.",
+            "facts": [
+              2
+            ]
+          },
+          {
+            "text": "This is far more than usual.",
+            "facts": []
+          }
+        ],
+        "to_check": []
+      },
+      "note": "an opinion with no fact"
+    },
+    {
+      "id": "BS06",
+      "trips": "cites-no-fact",
+      "facts": [
+        "Staff member S-023 works in billing in Administration; their shift is 08:00 to 17:00.",
+        "On 2026-10-29, S-023 opened the charts of 75 different patients, between 09:00 and 13:56.",
+        "On the other days in the log, S-023 opened the charts of at most 18 patients a day.",
+        "Rule HIGH_VOLUME raised this case: the staff member opened an unusual number of charts that day.",
+        "Each of the 75 charts belongs to a patient with a visit in the 90 days before, which billing's work accounts for."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "S-023 works in billing.",
+            "facts": [
+              1,
+              6
+            ]
+          }
+        ],
+        "to_check": []
+      },
+      "note": "cites fact 6 of 5"
+    },
+    {
+      "id": "BS07",
+      "trips": "not-in-facts",
+      "facts": [
+        "Staff member S-009 is a nurse in Family Medicine; their shift is 08:00 to 17:00.",
+        "Patient P-286 lives at S-009's home address.",
+        "At 2026-10-21 11:20, S-009 opened P-286's chart (summary) for 182 seconds.",
+        "At 2026-10-21 11:24, S-009 opened P-286's chart (notes) for 95 seconds.",
+        "In all, S-009 opened P-286's chart 2 times, between 2026-10-21 11:20 and 2026-10-21 11:24.",
+        "Rule NO_RELATIONSHIP raised this case: no care team, visit, appointment or the role's work accounts for the look.",
+        "Rule SAME_ADDRESS raised this case: the patient lives at the staff member's home address."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "S-009 opened P-286's chart 3 times on 2026-10-21.",
+            "facts": [
+              5
+            ]
+          }
+        ],
+        "to_check": []
+      },
+      "note": "a count the facts don't give"
+    },
+    {
+      "id": "BS08",
+      "trips": "not-in-facts",
+      "facts": [
+        "Staff member S-009 is a nurse in Family Medicine; their shift is 08:00 to 17:00.",
+        "Patient P-286 lives at S-009's home address.",
+        "At 2026-10-21 11:20, S-009 opened P-286's chart (summary) for 182 seconds.",
+        "At 2026-10-21 11:24, S-009 opened P-286's chart (notes) for 95 seconds.",
+        "In all, S-009 opened P-286's chart 2 times, between 2026-10-21 11:20 and 2026-10-21 11:24.",
+        "Rule NO_RELATIONSHIP raised this case: no care team, visit, appointment or the role's work accounts for the look.",
+        "Rule SAME_ADDRESS raised this case: the patient lives at the staff member's home address."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "S-009 opened the chart at 23:10.",
+            "facts": [
+              3
+            ]
+          }
+        ],
+        "to_check": []
+      },
+      "note": "a time not in the cited fact"
+    },
+    {
+      "id": "BS09",
+      "trips": "not-in-facts",
+      "facts": [
+        "Staff member S-009 is a nurse in Family Medicine; their shift is 08:00 to 17:00.",
+        "Patient P-286 lives at S-009's home address.",
+        "At 2026-10-21 11:20, S-009 opened P-286's chart (summary) for 182 seconds.",
+        "At 2026-10-21 11:24, S-009 opened P-286's chart (notes) for 95 seconds.",
+        "In all, S-009 opened P-286's chart 2 times, between 2026-10-21 11:20 and 2026-10-21 11:24.",
+        "Rule NO_RELATIONSHIP raised this case: no care team, visit, appointment or the role's work accounts for the look.",
+        "Rule SAME_ADDRESS raised this case: the patient lives at the staff member's home address."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "S-009 opened P-287's chart on 2026-10-21.",
+            "facts": [
+              3
+            ]
+          }
+        ],
+        "to_check": []
+      },
+      "note": "the wrong patient ID"
+    },
+    {
+      "id": "BS10",
+      "trips": "not-in-facts",
+      "facts": [
+        "Staff member S-006 is a physician in Urgent Care; their shift is 07:00 to 19:00.",
+        "Patient P-118 is on the clinic's VIP list.",
+        "At 2026-10-22 09:50, S-006 opened P-118's chart (summary) for 240 seconds.",
+        "In all, S-006 opened P-118's chart 1 time, at 2026-10-22 09:50.",
+        "Rule VIP raised this case: the patient is on the clinic's VIP list.",
+        "No care team, visit or appointment links S-006 and P-118 in the 90 days before the look."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "S-006 opened P-118's chart twice.",
+            "facts": [
+              3,
+              4
+            ]
+          }
+        ],
+        "to_check": []
+      },
+      "note": "'twice' where the facts say 1"
+    },
+    {
+      "id": "BS11",
+      "trips": "not-in-facts",
+      "facts": [
+        "Staff member S-006 is a physician in Urgent Care; their shift is 07:00 to 19:00.",
+        "Patient P-118 is on the clinic's VIP list.",
+        "At 2026-10-22 09:50, S-006 opened P-118's chart (summary) for 240 seconds.",
+        "In all, S-006 opened P-118's chart 1 time, at 2026-10-22 09:50.",
+        "Rule VIP raised this case: the patient is on the clinic's VIP list.",
+        "No care team, visit or appointment links S-006 and P-118 in the 90 days before the look."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "S-006 looked at P-118's chart for 400 seconds.",
+            "facts": [
+              3
+            ]
+          }
+        ],
+        "to_check": []
+      },
+      "note": "a duration not in the facts"
+    },
+    {
+      "id": "BS12",
+      "trips": "not-in-facts",
+      "facts": [
+        "Staff member S-023 works in billing in Administration; their shift is 08:00 to 17:00.",
+        "On 2026-10-29, S-023 opened the charts of 75 different patients, between 09:00 and 13:56.",
+        "On the other days in the log, S-023 opened the charts of at most 18 patients a day.",
+        "Rule HIGH_VOLUME raised this case: the staff member opened an unusual number of charts that day.",
+        "Each of the 75 charts belongs to a patient with a visit in the 90 days before, which billing's work accounts for."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "S-023 opened the charts of 90 patients on 2026-10-29.",
+            "facts": [
+              2
+            ]
+          }
+        ],
+        "to_check": []
+      },
+      "note": "the wrong number of patients"
+    },
+    {
+      "id": "BS13",
+      "trips": "accuses",
+      "facts": [
+        "Staff member S-009 is a nurse in Family Medicine; their shift is 08:00 to 17:00.",
+        "Patient P-286 lives at S-009's home address.",
+        "At 2026-10-21 11:20, S-009 opened P-286's chart (summary) for 182 seconds.",
+        "At 2026-10-21 11:24, S-009 opened P-286's chart (notes) for 95 seconds.",
+        "In all, S-009 opened P-286's chart 2 times, between 2026-10-21 11:20 and 2026-10-21 11:24.",
+        "Rule NO_RELATIONSHIP raised this case: no care team, visit, appointment or the role's work accounts for the look.",
+        "Rule SAME_ADDRESS raised this case: the patient lives at the staff member's home address."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "S-009 snooped in P-286's chart on 2026-10-21.",
+            "facts": [
+              3
+            ]
+          }
+        ],
+        "to_check": []
+      },
+      "note": "snooped"
+    },
+    {
+      "id": "BS14",
+      "trips": "accuses",
+      "facts": [
+        "Staff member S-009 is a nurse in Family Medicine; their shift is 08:00 to 17:00.",
+        "Patient P-286 lives at S-009's home address.",
+        "At 2026-10-21 11:20, S-009 opened P-286's chart (summary) for 182 seconds.",
+        "At 2026-10-21 11:24, S-009 opened P-286's chart (notes) for 95 seconds.",
+        "In all, S-009 opened P-286's chart 2 times, between 2026-10-21 11:20 and 2026-10-21 11:24.",
+        "Rule NO_RELATIONSHIP raised this case: no care team, visit, appointment or the role's work accounts for the look.",
+        "Rule SAME_ADDRESS raised this case: the patient lives at the staff member's home address."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "This was an unauthorized look at P-286's chart by S-009.",
+            "facts": [
+              3,
+              6
+            ]
+          }
+        ],
+        "to_check": []
+      },
+      "note": "unauthorized"
+    },
+    {
+      "id": "BS15",
+      "trips": "accuses",
+      "facts": [
+        "Staff member S-006 is a physician in Urgent Care; their shift is 07:00 to 19:00.",
+        "Patient P-118 is on the clinic's VIP list.",
+        "At 2026-10-22 09:50, S-006 opened P-118's chart (summary) for 240 seconds.",
+        "In all, S-006 opened P-118's chart 1 time, at 2026-10-22 09:50.",
+        "Rule VIP raised this case: the patient is on the clinic's VIP list.",
+        "No care team, visit or appointment links S-006 and P-118 in the 90 days before the look."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "S-006 violated clinic policy by opening P-118's chart.",
+            "facts": [
+              3
+            ]
+          }
+        ],
+        "to_check": []
+      },
+      "note": "violated"
+    },
+    {
+      "id": "BS16",
+      "trips": "accuses",
+      "facts": [
+        "Staff member S-006 is a physician in Urgent Care; their shift is 07:00 to 19:00.",
+        "Patient P-118 is on the clinic's VIP list.",
+        "At 2026-10-22 09:50, S-006 opened P-118's chart (summary) for 240 seconds.",
+        "In all, S-006 opened P-118's chart 1 time, at 2026-10-22 09:50.",
+        "Rule VIP raised this case: the patient is on the clinic's VIP list.",
+        "No care team, visit or appointment links S-006 and P-118 in the 90 days before the look."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "S-006 opened P-118's chart, which looks like a breach.",
+            "facts": [
+              3
+            ]
+          }
+        ],
+        "to_check": []
+      },
+      "note": "breach"
+    },
+    {
+      "id": "BS17",
+      "trips": "accuses",
+      "facts": [
+        "Staff member S-023 works in billing in Administration; their shift is 08:00 to 17:00.",
+        "On 2026-10-29, S-023 opened the charts of 75 different patients, between 09:00 and 13:56.",
+        "On the other days in the log, S-023 opened the charts of at most 18 patients a day.",
+        "Rule HIGH_VOLUME raised this case: the staff member opened an unusual number of charts that day.",
+        "Each of the 75 charts belongs to a patient with a visit in the 90 days before, which billing's work accounts for."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "S-023's activity on 2026-10-29 is suspicious.",
+            "facts": [
+              2
+            ]
+          }
+        ],
+        "to_check": []
+      },
+      "note": "suspicious"
+    },
+    {
+      "id": "BS18",
+      "trips": "accuses",
+      "facts": [
+        "Staff member S-023 works in billing in Administration; their shift is 08:00 to 17:00.",
+        "On 2026-10-29, S-023 opened the charts of 75 different patients, between 09:00 and 13:56.",
+        "On the other days in the log, S-023 opened the charts of at most 18 patients a day.",
+        "Rule HIGH_VOLUME raised this case: the staff member opened an unusual number of charts that day.",
+        "Each of the 75 charts belongs to a patient with a visit in the 90 days before, which billing's work accounts for."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "S-023 opened 75 charts on 2026-10-29.",
+            "facts": [
+              2
+            ]
+          },
+          {
+            "text": "S-023 should be disciplined.",
+            "facts": [
+              1
+            ]
+          }
+        ],
+        "to_check": []
+      },
+      "note": "disciplined"
+    },
+    {
+      "id": "BS19",
+      "trips": "clinical",
+      "facts": [
+        "Staff member S-009 is a nurse in Family Medicine; their shift is 08:00 to 17:00.",
+        "Patient P-286 lives at S-009's home address.",
+        "At 2026-10-21 11:20, S-009 opened P-286's chart (summary) for 182 seconds.",
+        "At 2026-10-21 11:24, S-009 opened P-286's chart (notes) for 95 seconds.",
+        "In all, S-009 opened P-286's chart 2 times, between 2026-10-21 11:20 and 2026-10-21 11:24.",
+        "Rule NO_RELATIONSHIP raised this case: no care team, visit, appointment or the role's work accounts for the look.",
+        "Rule SAME_ADDRESS raised this case: the patient lives at the staff member's home address."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "S-009 opened P-286's notes about diabetes on 2026-10-21.",
+            "facts": [
+              4
+            ]
+          }
+        ],
+        "to_check": []
+      },
+      "note": "a diagnosis"
+    },
+    {
+      "id": "BS20",
+      "trips": "clinical",
+      "facts": [
+        "Staff member S-009 is a nurse in Family Medicine; their shift is 08:00 to 17:00.",
+        "Patient P-286 lives at S-009's home address.",
+        "At 2026-10-21 11:20, S-009 opened P-286's chart (summary) for 182 seconds.",
+        "At 2026-10-21 11:24, S-009 opened P-286's chart (notes) for 95 seconds.",
+        "In all, S-009 opened P-286's chart 2 times, between 2026-10-21 11:20 and 2026-10-21 11:24.",
+        "Rule NO_RELATIONSHIP raised this case: no care team, visit, appointment or the role's work accounts for the look.",
+        "Rule SAME_ADDRESS raised this case: the patient lives at the staff member's home address."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "S-009 read about P-286's insulin on 2026-10-21.",
+            "facts": [
+              3
+            ]
+          }
+        ],
+        "to_check": []
+      },
+      "note": "a medicine"
+    },
+    {
+      "id": "BS21",
+      "trips": "clinical",
+      "facts": [
+        "Staff member S-006 is a physician in Urgent Care; their shift is 07:00 to 19:00.",
+        "Patient P-118 is on the clinic's VIP list.",
+        "At 2026-10-22 09:50, S-006 opened P-118's chart (summary) for 240 seconds.",
+        "In all, S-006 opened P-118's chart 1 time, at 2026-10-22 09:50.",
+        "Rule VIP raised this case: the patient is on the clinic's VIP list.",
+        "No care team, visit or appointment links S-006 and P-118 in the 90 days before the look."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "S-006 opened the cancer notes of P-118.",
+            "facts": [
+              3
+            ]
+          }
+        ],
+        "to_check": []
+      },
+      "note": "a disease"
+    },
+    {
+      "id": "BS22",
+      "trips": "clinical",
+      "facts": [
+        "Staff member S-006 is a physician in Urgent Care; their shift is 07:00 to 19:00.",
+        "Patient P-118 is on the clinic's VIP list.",
+        "At 2026-10-22 09:50, S-006 opened P-118's chart (summary) for 240 seconds.",
+        "In all, S-006 opened P-118's chart 1 time, at 2026-10-22 09:50.",
+        "Rule VIP raised this case: the patient is on the clinic's VIP list.",
+        "No care team, visit or appointment links S-006 and P-118 in the 90 days before the look."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "S-006 checked P-118's blood pressure readings.",
+            "facts": [
+              3
+            ]
+          }
+        ],
+        "to_check": []
+      },
+      "note": "a test"
+    },
+    {
+      "id": "BS23",
+      "trips": "clinical",
+      "facts": [
+        "Staff member S-023 works in billing in Administration; their shift is 08:00 to 17:00.",
+        "On 2026-10-29, S-023 opened the charts of 75 different patients, between 09:00 and 13:56.",
+        "On the other days in the log, S-023 opened the charts of at most 18 patients a day.",
+        "Rule HIGH_VOLUME raised this case: the staff member opened an unusual number of charts that day.",
+        "Each of the 75 charts belongs to a patient with a visit in the 90 days before, which billing's work accounts for."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "S-023 opened 75 charts, some with a pregnancy, on 2026-10-29.",
+            "facts": [
+              2
+            ]
+          }
+        ],
+        "to_check": []
+      },
+      "note": "a condition"
+    },
+    {
+      "id": "BS24",
+      "trips": "clinical",
+      "facts": [
+        "Staff member S-023 works in billing in Administration; their shift is 08:00 to 17:00.",
+        "On 2026-10-29, S-023 opened the charts of 75 different patients, between 09:00 and 13:56.",
+        "On the other days in the log, S-023 opened the charts of at most 18 patients a day.",
+        "Rule HIGH_VOLUME raised this case: the staff member opened an unusual number of charts that day.",
+        "Each of the 75 charts belongs to a patient with a visit in the 90 days before, which billing's work accounts for."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "S-023 opened 75 charts on 2026-10-29.",
+            "facts": [
+              2
+            ]
+          }
+        ],
+        "to_check": [
+          {
+            "text": "Whether S-023 was checking prescriptions for billing.",
+            "facts": [
+              1
+            ]
+          }
+        ]
+      },
+      "note": "prescriptions"
+    },
+    {
+      "id": "BS25",
+      "trips": "too-long",
+      "facts": [
+        "Staff member S-009 is a nurse in Family Medicine; their shift is 08:00 to 17:00.",
+        "Patient P-286 lives at S-009's home address.",
+        "At 2026-10-21 11:20, S-009 opened P-286's chart (summary) for 182 seconds.",
+        "At 2026-10-21 11:24, S-009 opened P-286's chart (notes) for 95 seconds.",
+        "In all, S-009 opened P-286's chart 2 times, between 2026-10-21 11:20 and 2026-10-21 11:24.",
+        "Rule NO_RELATIONSHIP raised this case: no care team, visit, appointment or the role's work accounts for the look.",
+        "Rule SAME_ADDRESS raised this case: the patient lives at the staff member's home address."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "S-009 opened P-286's chart on 2026-10-21 and then opened it again on 2026-10-21 for its notes.",
+            "facts": [
+              3,
+              4
+            ]
+          },
+          {
+            "text": "S-009 opened P-286's chart on 2026-10-21 and then opened it again on 2026-10-21 for its notes.",
+            "facts": [
+              3,
+              4
+            ]
+          },
+          {
+            "text": "S-009 opened P-286's chart on 2026-10-21 and then opened it again on 2026-10-21 for its notes.",
+            "facts": [
+              3,
+              4
+            ]
+          },
+          {
+            "text": "S-009 opened P-286's chart on 2026-10-21 and then opened it again on 2026-10-21 for its notes.",
+            "facts": [
+              3,
+              4
+            ]
+          },
+          {
+            "text": "S-009 opened P-286's chart on 2026-10-21 and then opened it again on 2026-10-21 for its notes.",
+            "facts": [
+              3,
+              4
+            ]
+          }
+        ],
+        "to_check": [
+          {
+            "text": "S-009 opened P-286's chart on 2026-10-21 and then opened it again on 2026-10-21 for its notes.",
+            "facts": [
+              3,
+              4
+            ]
+          },
+          {
+            "text": "S-009 opened P-286's chart on 2026-10-21 and then opened it again on 2026-10-21 for its notes.",
+            "facts": [
+              3,
+              4
+            ]
+          },
+          {
+            "text": "S-009 opened P-286's chart on 2026-10-21 and then opened it again on 2026-10-21 for its notes.",
+            "facts": [
+              3,
+              4
+            ]
+          }
+        ]
+      },
+      "note": "eight long sentences"
+    },
+    {
+      "id": "BS26",
+      "trips": "too-long",
+      "facts": [
+        "Staff member S-006 is a physician in Urgent Care; their shift is 07:00 to 19:00.",
+        "Patient P-118 is on the clinic's VIP list.",
+        "At 2026-10-22 09:50, S-006 opened P-118's chart (summary) for 240 seconds.",
+        "In all, S-006 opened P-118's chart 1 time, at 2026-10-22 09:50.",
+        "Rule VIP raised this case: the patient is on the clinic's VIP list.",
+        "No care team, visit or appointment links S-006 and P-118 in the 90 days before the look."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "S-006 opened the chart of P-118, a patient on the clinic's VIP list, for 240 seconds at 09:50 on 2026-10-22.",
+            "facts": [
+              2,
+              3
+            ]
+          },
+          {
+            "text": "S-006 opened the chart of P-118, a patient on the clinic's VIP list, for 240 seconds at 09:50 on 2026-10-22.",
+            "facts": [
+              2,
+              3
+            ]
+          },
+          {
+            "text": "S-006 opened the chart of P-118, a patient on the clinic's VIP list, for 240 seconds at 09:50 on 2026-10-22.",
+            "facts": [
+              2,
+              3
+            ]
+          },
+          {
+            "text": "S-006 opened the chart of P-118, a patient on the clinic's VIP list, for 240 seconds at 09:50 on 2026-10-22.",
+            "facts": [
+              2,
+              3
+            ]
+          },
+          {
+            "text": "S-006 opened the chart of P-118, a patient on the clinic's VIP list, for 240 seconds at 09:50 on 2026-10-22.",
+            "facts": [
+              2,
+              3
+            ]
+          }
+        ],
+        "to_check": [
+          {
+            "text": "S-006 opened the chart of P-118, a patient on the clinic's VIP list, for 240 seconds at 09:50 on 2026-10-22.",
+            "facts": [
+              2,
+              3
+            ]
+          },
+          {
+            "text": "S-006 opened the chart of P-118, a patient on the clinic's VIP list, for 240 seconds at 09:50 on 2026-10-22.",
+            "facts": [
+              2,
+              3
+            ]
+          }
+        ]
+      },
+      "note": "seven long sentences"
+    },
+    {
+      "id": "BS27",
+      "trips": "too-long",
+      "facts": [
+        "Staff member S-023 works in billing in Administration; their shift is 08:00 to 17:00.",
+        "On 2026-10-29, S-023 opened the charts of 75 different patients, between 09:00 and 13:56.",
+        "On the other days in the log, S-023 opened the charts of at most 18 patients a day.",
+        "Rule HIGH_VOLUME raised this case: the staff member opened an unusual number of charts that day.",
+        "Each of the 75 charts belongs to a patient with a visit in the 90 days before, which billing's work accounts for."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "On 2026-10-29 S-023 opened the charts of 75 different patients between 09:00 and 13:56 while working in billing.",
+            "facts": [
+              1,
+              2
+            ]
+          },
+          {
+            "text": "On 2026-10-29 S-023 opened the charts of 75 different patients between 09:00 and 13:56 while working in billing.",
+            "facts": [
+              1,
+              2
+            ]
+          },
+          {
+            "text": "On 2026-10-29 S-023 opened the charts of 75 different patients between 09:00 and 13:56 while working in billing.",
+            "facts": [
+              1,
+              2
+            ]
+          },
+          {
+            "text": "On 2026-10-29 S-023 opened the charts of 75 different patients between 09:00 and 13:56 while working in billing.",
+            "facts": [
+              1,
+              2
+            ]
+          },
+          {
+            "text": "On 2026-10-29 S-023 opened the charts of 75 different patients between 09:00 and 13:56 while working in billing.",
+            "facts": [
+              1,
+              2
+            ]
+          }
+        ],
+        "to_check": [
+          {
+            "text": "On 2026-10-29 S-023 opened the charts of 75 different patients between 09:00 and 13:56 while working in billing.",
+            "facts": [
+              1,
+              2
+            ]
+          },
+          {
+            "text": "On 2026-10-29 S-023 opened the charts of 75 different patients between 09:00 and 13:56 while working in billing.",
+            "facts": [
+              1,
+              2
+            ]
+          }
+        ]
+      },
+      "note": "seven long sentences"
+    },
+    {
+      "id": "BS28",
+      "trips": "too-long",
+      "facts": [
+        "Staff member S-009 is a nurse in Family Medicine; their shift is 08:00 to 17:00.",
+        "Patient P-286 lives at S-009's home address.",
+        "At 2026-10-21 11:20, S-009 opened P-286's chart (summary) for 182 seconds.",
+        "At 2026-10-21 11:24, S-009 opened P-286's chart (notes) for 95 seconds.",
+        "In all, S-009 opened P-286's chart 2 times, between 2026-10-21 11:20 and 2026-10-21 11:24.",
+        "Rule NO_RELATIONSHIP raised this case: no care team, visit, appointment or the role's work accounts for the look.",
+        "Rule SAME_ADDRESS raised this case: the patient lives at the staff member's home address."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "S-009 is a nurse in Family Medicine whose shift is 08:00 to 17:00 and who opened P-286's chart at 11:20 on 2026-10-21.",
+            "facts": [
+              1,
+              3
+            ]
+          },
+          {
+            "text": "S-009 is a nurse in Family Medicine whose shift is 08:00 to 17:00 and who opened P-286's chart at 11:20 on 2026-10-21.",
+            "facts": [
+              1,
+              3
+            ]
+          },
+          {
+            "text": "S-009 is a nurse in Family Medicine whose shift is 08:00 to 17:00 and who opened P-286's chart at 11:20 on 2026-10-21.",
+            "facts": [
+              1,
+              3
+            ]
+          },
+          {
+            "text": "S-009 is a nurse in Family Medicine whose shift is 08:00 to 17:00 and who opened P-286's chart at 11:20 on 2026-10-21.",
+            "facts": [
+              1,
+              3
+            ]
+          },
+          {
+            "text": "S-009 is a nurse in Family Medicine whose shift is 08:00 to 17:00 and who opened P-286's chart at 11:20 on 2026-10-21.",
+            "facts": [
+              1,
+              3
+            ]
+          }
+        ],
+        "to_check": [
+          {
+            "text": "S-009 is a nurse in Family Medicine whose shift is 08:00 to 17:00 and who opened P-286's chart at 11:20 on 2026-10-21.",
+            "facts": [
+              1,
+              3
+            ]
+          },
+          {
+            "text": "S-009 is a nurse in Family Medicine whose shift is 08:00 to 17:00 and who opened P-286's chart at 11:20 on 2026-10-21.",
+            "facts": [
+              1,
+              3
+            ]
+          }
+        ]
+      },
+      "note": "repeats one fact"
+    },
+    {
+      "id": "BS29",
+      "trips": "too-long",
+      "facts": [
+        "Staff member S-006 is a physician in Urgent Care; their shift is 07:00 to 19:00.",
+        "Patient P-118 is on the clinic's VIP list.",
+        "At 2026-10-22 09:50, S-006 opened P-118's chart (summary) for 240 seconds.",
+        "In all, S-006 opened P-118's chart 1 time, at 2026-10-22 09:50.",
+        "Rule VIP raised this case: the patient is on the clinic's VIP list.",
+        "No care team, visit or appointment links S-006 and P-118 in the 90 days before the look."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "S-006 is a physician in Urgent Care whose shift is 07:00 to 19:00 and who opened P-118's chart at 09:50 on 2026-10-22.",
+            "facts": [
+              1,
+              3
+            ]
+          },
+          {
+            "text": "S-006 is a physician in Urgent Care whose shift is 07:00 to 19:00 and who opened P-118's chart at 09:50 on 2026-10-22.",
+            "facts": [
+              1,
+              3
+            ]
+          },
+          {
+            "text": "S-006 is a physician in Urgent Care whose shift is 07:00 to 19:00 and who opened P-118's chart at 09:50 on 2026-10-22.",
+            "facts": [
+              1,
+              3
+            ]
+          },
+          {
+            "text": "S-006 is a physician in Urgent Care whose shift is 07:00 to 19:00 and who opened P-118's chart at 09:50 on 2026-10-22.",
+            "facts": [
+              1,
+              3
+            ]
+          },
+          {
+            "text": "S-006 is a physician in Urgent Care whose shift is 07:00 to 19:00 and who opened P-118's chart at 09:50 on 2026-10-22.",
+            "facts": [
+              1,
+              3
+            ]
+          }
+        ],
+        "to_check": [
+          {
+            "text": "S-006 is a physician in Urgent Care whose shift is 07:00 to 19:00 and who opened P-118's chart at 09:50 on 2026-10-22.",
+            "facts": [
+              1,
+              3
+            ]
+          },
+          {
+            "text": "S-006 is a physician in Urgent Care whose shift is 07:00 to 19:00 and who opened P-118's chart at 09:50 on 2026-10-22.",
+            "facts": [
+              1,
+              3
+            ]
+          }
+        ]
+      },
+      "note": "repeats two facts"
+    },
+    {
+      "id": "BS30",
+      "trips": "too-long",
+      "facts": [
+        "Staff member S-023 works in billing in Administration; their shift is 08:00 to 17:00.",
+        "On 2026-10-29, S-023 opened the charts of 75 different patients, between 09:00 and 13:56.",
+        "On the other days in the log, S-023 opened the charts of at most 18 patients a day.",
+        "Rule HIGH_VOLUME raised this case: the staff member opened an unusual number of charts that day.",
+        "Each of the 75 charts belongs to a patient with a visit in the 90 days before, which billing's work accounts for."
+      ],
+      "summary": {
+        "summary": [
+          {
+            "text": "S-023 works in billing in Administration with a shift of 08:00 to 17:00 and opened 75 patients' charts on 2026-10-29.",
+            "facts": [
+              1,
+              2
+            ]
+          },
+          {
+            "text": "S-023 works in billing in Administration with a shift of 08:00 to 17:00 and opened 75 patients' charts on 2026-10-29.",
+            "facts": [
+              1,
+              2
+            ]
+          },
+          {
+            "text": "S-023 works in billing in Administration with a shift of 08:00 to 17:00 and opened 75 patients' charts on 2026-10-29.",
+            "facts": [
+              1,
+              2
+            ]
+          },
+          {
+            "text": "S-023 works in billing in Administration with a shift of 08:00 to 17:00 and opened 75 patients' charts on 2026-10-29.",
+            "facts": [
+              1,
+              2
+            ]
+          },
+          {
+            "text": "S-023 works in billing in Administration with a shift of 08:00 to 17:00 and opened 75 patients' charts on 2026-10-29.",
+            "facts": [
+              1,
+              2
+            ]
+          }
+        ],
+        "to_check": [
+          {
+            "text": "S-023 works in billing in Administration with a shift of 08:00 to 17:00 and opened 75 patients' charts on 2026-10-29.",
+            "facts": [
+              1,
+              2
+            ]
+          },
+          {
+            "text": "S-023 works in billing in Administration with a shift of 08:00 to 17:00 and opened 75 patients' charts on 2026-10-29.",
+            "facts": [
+              1,
+              2
+            ]
+          }
+        ]
+      },
+      "note": "a padded summary"
+    }
+  ]
+}
