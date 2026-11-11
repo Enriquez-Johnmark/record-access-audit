@@ -1,6 +1,8 @@
 """Running the rules over the stored log (B2, B4): new flags go into the open
-case for their staff member and patient (or day), or a new case; a run with
-the same log and rule-set version adds nothing, and no flag is ever changed."""
+case for their staff member and patient (or day), or a new case. An access
+and rule already flagged, under any version, is not flagged again, so running
+again, or a new version that finds nothing new, adds nothing; no flag is ever
+changed."""
 
 from collections import defaultdict
 from dataclasses import dataclass
@@ -45,9 +47,9 @@ def run_rules(db: Db, clock: Clock, facts: ClinicFacts, actor: str = SYSTEM) -> 
         clinic = load_clinic(db, facts)
         existing = {
             (cast(str, r["access"]), cast(str, r["code"]))
-            for r in db.execute(
-                "select access, code from flags where version = %s", (rules.version,)
-            ).fetchall()
+            # Evidence already flagged under any version is never flagged again,
+            # so a new version adds only what it newly finds.
+            for r in db.execute("select distinct access, code from flags").fetchall()
         }
         new: dict[CaseKey, list[Flag]] = defaultdict(list)
         for f in flag(clinic, rules):

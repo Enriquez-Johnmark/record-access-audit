@@ -61,7 +61,8 @@ An access is accounted for when, at its time:
 - When a staff member opens **their own record**, only `OWN_RECORD` applies (and the chart counts toward `HIGH_VOLUME`); the name, address and co-worker rules would match trivially. `COWORKER` means another staff member's record.
 - A **search-list hit never raises a case.** In a case it is shown as "appeared in a search list; chart not opened", never as an opened chart.
 - The **queue** is ordered by code: the sum of a case's rule weights, highest first, then the oldest flag first. A model never changes what is flagged or the order.
-- **Running** the rules over the log is idempotent: the same log and rule-set version raise no new flags. A new version flags under its own number and never rewrites a past flag. A flag on a pair whose case is already decided opens a new case.
+- **Running** the rules over the log is idempotent: an access and rule already flagged, under any version, is never flagged again. A new version flags under its own number only what no earlier version flagged, and never rewrites a past flag; a change that finds nothing new reopens nothing. A new flag on a pair whose case is already decided (a new look, or a rule newly firing) opens a new case.
+- The queue's weights are the **current** version's.
 - Only the privacy officer edits the rule set.
 
 ## Summaries

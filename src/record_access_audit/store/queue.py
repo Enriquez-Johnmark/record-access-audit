@@ -1,5 +1,6 @@
 """The privacy officer's queue (B5): every open case, ordered by code, by the
-sum of its rules' weights, then the oldest first. No model value is read."""
+sum of its rules' weights in the current rule-set version, then the oldest
+first. No model value is read."""
 
 from dataclasses import dataclass
 from datetime import date, datetime
@@ -23,12 +24,13 @@ class QueueRow:
 
 QUEUE = """
 select c.id, c.staff, c.patient, c.day, c.flagged_at,
-       (select sum(w) from (select max(f.weight) as w from flags f where f.case_id = c.id group by f.code) x)
-           as score,
+       (select coalesce(sum((current.settings -> 'weights' ->> x.code)::int), 0)
+          from (select distinct f.code from flags f where f.case_id = c.id) x) as score,
        (select array_agg(distinct f.code order by f.code) from flags f where f.case_id = c.id) as codes,
        (select min(a.at) from flags f join accesses a on a.id = f.access where f.case_id = c.id)
            as first_access_at
-from cases c
+from cases c,
+     (select settings from rule_set_versions order by version desc limit 1) current
 where not exists (select 1 from decisions d where d.case_id = c.id)
 order by score desc, c.flagged_at, first_access_at, c.id
 """

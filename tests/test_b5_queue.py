@@ -1,9 +1,12 @@
+from dataclasses import replace
 from datetime import timedelta
 
 from record_access_audit.audit_run import run_rules
+from record_access_audit.core.rules import DEFAULT_RULES, RuleCode
 from record_access_audit.made_up.generate import generate
 from record_access_audit.store.db import Db
 from record_access_audit.store.queue import open_cases
+from record_access_audit.store.rule_sets import add_version
 from tests.support.stored import stored
 
 FACTS = generate().clinic.facts
@@ -43,3 +46,17 @@ def test_b5_a_decided_case_leaves_the_queue(db: Db) -> None:
         row.id for row in open_cases(db, clock) if row.id != first.id
     ]
     assert first.id not in [row.id for row in open_cases(db, clock)]
+
+
+def test_b5_the_queue_weighs_cases_by_the_current_rule_set(db: Db) -> None:
+    clock = stored(db)
+    run_rules(db, clock, FACTS)
+    add_version(
+        db,
+        clock,
+        "privacy@clinic.example.test",
+        replace(DEFAULT_RULES, weights={**DEFAULT_RULES.weights, RuleCode.VIP: 20}),
+    )
+    queue = open_cases(db, clock)
+    assert all("VIP" in row.codes for row in queue[:4])
+    assert queue[0].score == 21
