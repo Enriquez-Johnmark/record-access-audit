@@ -1,0 +1,56 @@
+[project]
+name = "record-access-audit"
+version = "0.1.0"
+description = "Helps a clinic's privacy officer find and review inappropriate looks at patients' records: code flags, Claude explains checked facts, a person decides."
+authors = [{ name = "Enriquez-Johnmark", email = "enriquezjohnmark15@gmail.com" }]
+requires-python = ">=3.12"
+license = "LicenseRef-All-Rights-Reserved"
+dependencies = [
+    "anthropic>=2.6.0",
+    "fastapi>=0.162.1",
+    "httpx>=0.28.1",
+    "psycopg[binary,pool]>=3.2",
+    "pydantic>=2.14.3",
+    "uvicorn>=0.54.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.32,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.414",
+    "pytest>=9.2.0",
+    "ruff>=0.17.4",
+]
+
+[project.scripts]
+record-access-audit = "record_access_audit.cli:main"
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF", "DTZ", "S", "PT", "N", "TID"]
+ignore = ["S101"]
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"datetime.datetime.now".msg = "Read time through the Clock."
+"datetime.datetime.utcnow".msg = "Read time through the Clock."
+"datetime.date.today".msg = "Read time through the Clock."
+"time.time".msg = "Read time through the Clock."
+
+[tool.ruff.lint.per-file-ignores]
+"src/record_access_audit/clock.py" = ["TID251"]
+
+[tool.pyright]
+include = ["src", "tests"]
+typeCheckingMode = "strict"
+pythonVersion = "3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

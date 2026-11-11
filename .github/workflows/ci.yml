@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: record_access
+          POSTGRES_PASSWORD: record_access
+          POSTGRES_DB: record_access
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U record_access" --health-interval 2s --health-retries 30
+      # The made-up clinic's FHIR server.
+      hapi:
+        image: hapiproject/hapi:v8.4.0-1
+        ports:
+          - 8090:8080
+    env:
+      DATABASE_URL: postgresql://record_access:record_access@localhost:5432/record_access
+      FHIR_URL: http://127.0.0.1:8090/fhir
+    steps:
+      - uses: actions/checkout@v4
+      # uv from PyPI at a pinned version: fetching it from GitHub releases has
+      # failed CI with 504s in another project.
+      - run: python3 -m pip install --user "uv==0.11.32"
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: uv-${{ hashFiles('uv.lock') }}
+      - run: uv sync --locked
+      - run: uv run ruff format --check .
+      - run: uv run ruff check .
+      - run: uv run pyright
+      - name: Wait for HAPI FHIR
+        run: for _ in $(seq 1 90); do curl -sf "$FHIR_URL/metadata" >/dev/null && break; sleep 2; done
+      - run: uv run pytest --junitxml=test-results.xml
