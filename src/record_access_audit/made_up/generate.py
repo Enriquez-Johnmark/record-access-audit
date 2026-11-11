@@ -92,6 +92,19 @@ def labels_json(labels: tuple[Label, ...]) -> list[dict[str, Any]]:
     ]
 
 
+def facts_json(facts: ClinicFacts) -> dict[str, Any]:
+    """The clinic facts with no FHIR home, as saved in `demo/clinic.json`."""
+    return {
+        "made_up": "Example Valley Clinic and everyone in it are made up.",
+        "shifts": {
+            staff: {"start": shift.start.isoformat("minutes"), "end": shift.end.isoformat("minutes")}
+            for staff, shift in sorted(facts.shifts.items())
+        },
+        "staff_records": dict(sorted(facts.staff_records.items())),
+        "vips": sorted(facts.vips),
+    }
+
+
 def _day(index: int) -> date:
     return (START + timedelta(days=index)).date()
 
@@ -130,7 +143,7 @@ class _Builder:
         clinic = Clinic(
             staff=tuple(self.staff),
             patients=tuple(sorted(self.patients, key=lambda p: p.id)),
-            care_teams=tuple(self.care_teams),
+            care_teams=tuple(sorted(self.care_teams, key=lambda m: (m.patient, m.staff, m.start))),
             encounters=tuple(sorted(self.encounters, key=lambda e: e.id)),
             appointments=tuple(sorted(self.appointments, key=lambda a: a.id)),
             accesses=accesses,
