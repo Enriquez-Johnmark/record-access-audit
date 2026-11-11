@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from record_access_audit.core.accounting import Index, Reason, reasons
-from record_access_audit.core.records import Access, Clinic
+from record_access_audit.core.records import Access, Clinic, Encounter
 from record_access_audit.core.rules import DEFAULT_RULES, ONLY_UNACCOUNTED, flag
 from record_access_audit.made_up.generate import generate
 from tests.support.clinic import ANA, CLERK, DAY, DESK, DOCTOR, at, booking, clinic, member, opened, visit
@@ -61,3 +61,11 @@ def test_b1_no_access_accounted_for_in_the_made_up_log_raises_an_unaccounted_onl
     for f in flag(made, DEFAULT_RULES):
         if f.access in accounted:
             assert f.code not in ONLY_UNACCOUNTED, f
+
+
+def test_b1_a_visit_lasting_several_days_accounts_for_every_day_of_it() -> None:
+    long_visit = Encounter("E-0009", ANA.id, (DOCTOR.id,), at(23, 30), at(8, day=DAY + timedelta(days=2)))
+    c = clinic(encounters=(long_visit,))
+    assert why(c, opened(DOCTOR, ANA, at(7, day=DAY + timedelta(days=2)))) == [Reason.ENCOUNTER]
+    assert why(c, opened(DOCTOR, ANA, at(7, day=DAY + timedelta(days=3)))) == [Reason.ENCOUNTER]
+    assert why(c, opened(DOCTOR, ANA, at(7, day=DAY + timedelta(days=4)))) == []

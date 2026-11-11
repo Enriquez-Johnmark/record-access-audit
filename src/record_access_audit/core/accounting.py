@@ -21,7 +21,7 @@ TZ = ZoneInfo(CLINIC_TIME_ZONE)
 
 class Reason(StrEnum):
     CARE_TEAM = "on the patient's care team"
-    ENCOUNTER = "took part in a visit with the patient that day or the day before or after"
+    ENCOUNTER = "took part in a visit with the patient that day, or the day before or after it"
     APPOINTMENT = "has an appointment with the patient that day"
     FRONT_DESK_BOOKING = "front desk: the patient has an appointment within 14 days"
     BILLING_VISIT = "billing: the patient had a visit in the 90 days before"
@@ -55,8 +55,10 @@ def reasons(index: Index, staff: str, patient: str, at: datetime) -> list[Reason
     if any(m.staff == staff and m.start <= at and (m.end is None or at < m.end) for m in index.care[patient]):
         found.append(Reason.CARE_TEAM)
     today = _day(at)
+    margin = rules.encounter_days
     if any(
-        staff in e.staff and abs(_day(e.start) - today) <= rules.encounter_days for e in index.visits[patient]
+        staff in e.staff and _day(e.start) - margin <= today <= _day(e.end) + margin
+        for e in index.visits[patient]
     ):
         found.append(Reason.ENCOUNTER)
     if any(a.staff == staff and _day(a.start) == today for a in index.bookings[patient]):
