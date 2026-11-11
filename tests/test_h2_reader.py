@@ -85,3 +85,10 @@ def test_h2_wrong_ids_types_and_empty_lists_are_refused_one_resource_at_a_time()
     assert reasons["PractitionerRole/evc-r999"] == "a second PractitionerRole for Practitioner/evc-s001"
     assert next(s for s in result.clinic.staff if s.id == "S-001").role == clinic.staff[0].role
     assert len(result.clinic.patients) == 298
+
+
+def test_h2_the_run_command_finds_the_clinic_facts_from_any_directory() -> None:
+    from record_access_audit.cli import FACTS_FILE
+
+    assert FACTS_FILE.is_absolute()
+    assert FACTS_FILE == ROOT / "demo" / "clinic.json"

@@ -15,7 +15,8 @@ from record_access_audit.made_up.generate import generate
 from record_access_audit.made_up.load import load
 from record_access_audit.store.db import connect, migrate
 
-FACTS_FILE = Path("demo") / "clinic.json"
+# The clinic facts with no FHIR home, found from the package so any directory works.
+FACTS_FILE = Path(__file__).resolve().parents[2] / "demo" / "clinic.json"
 
 
 def _fhir_url(given: str | None) -> str:

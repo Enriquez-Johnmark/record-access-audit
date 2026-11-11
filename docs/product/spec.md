@@ -55,9 +55,9 @@ An access is accounted for when, at its time:
 | `DECEASED` | the patient died before the access | not accounted for | 2 |
 | `AFTER_CARE_ENDED` | the staff member's last care relationship with the patient ended over 30 days before | not accounted for | 1 |
 | `OUTSIDE_SHIFT` | the chart was opened over an hour outside the staff member's shift | not accounted for | 1 |
-| `HIGH_VOLUME` | the staff member opened more than 60 charts that day, accounted for or not | every chart opened; one case per staff member and day | 2 |
+| `HIGH_VOLUME` | the staff member opened the charts of more than 60 different patients that day, accounted for or not | every chart opened; one case per staff member and day | 2 |
 
-- Thresholds (30 days, an hour, 60 charts, 14 and 90 days) and weights are settings in the rule set.
+- Thresholds (30 days, an hour, 60 patients, 14 and 90 days) and weights are settings in the rule set.
 - When a staff member opens **their own record**, only `OWN_RECORD` applies (and the chart counts toward `HIGH_VOLUME`); the name, address and co-worker rules would match trivially. `COWORKER` means another staff member's record.
 - A **search-list hit never raises a case.** In a case it is shown as "appeared in a search list; chart not opened", never as an opened chart.
 - The **queue** is ordered by code: the sum of a case's rule weights, highest first, then the oldest flag first. A model never changes what is flagged or the order.

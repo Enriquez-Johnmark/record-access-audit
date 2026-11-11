@@ -98,7 +98,7 @@ def test_b2_care_that_ended_over_30_days_before_and_looks_off_shift_are_flagged(
     assert RuleCode.OUTSIDE_SHIFT not in codes(clinic(accesses=(opened(DOCTOR, ANA, at(17, 59)),)))
 
 
-def test_b2_high_volume_counts_every_chart_over_the_threshold_in_a_day() -> None:
+def test_b2_high_volume_counts_the_patients_whose_charts_were_opened_in_a_day() -> None:
     patients = tuple(
         ANA.__class__(f"P-{n:03d}", "X", f"Fam{n}", ANA.birth_date, ANA.address, None) for n in range(10, 72)
     )
