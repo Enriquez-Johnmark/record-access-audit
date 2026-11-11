@@ -1,0 +1,129 @@
+"""The checks every summary must pass before a person sees it (D1 to D6). Each
+problem names its check, what it found and where."""
+
+import re
+from dataclasses import dataclass
+from enum import StrEnum
+
+from record_access_audit.core.summary import Sentence, Summary
+
+MAX_WORDS = 120
+
+
+class Check(StrEnum):
+    CITES_NO_FACT = "cites-no-fact"
+    NOT_IN_FACTS = "not-in-facts"
+    ACCUSES = "accuses"
+    CLINICAL = "clinical"
+    TOO_LONG = "too-long"
+
+    @property
+    def description(self) -> str:
+        return {
+            Check.CITES_NO_FACT: "A sentence must cite one or more of the case's facts, and no others.",
+            Check.NOT_IN_FACTS: "Every number, time and ID must appear in the facts the sentence cites.",
+            Check.ACCUSES: "A summary describes; it never decides or accuses.",
+            Check.CLINICAL: "A summary never mentions clinical content.",
+            Check.TOO_LONG: f"A summary is at most {MAX_WORDS} words in all.",
+        }[self]
+
+
+@dataclass(frozen=True)
+class Problem:
+    check: Check
+    found: str
+    where: str
+
+
+# IDs (S-009, P-286, A-01660), dates, times, then plain numbers.
+TOKENS = re.compile(r"\b(?:[SPA]-\d+|\d{4}-\d{2}-\d{2}|\d{1,2}:\d{2}|\d+(?:\.\d+)?)\b")
+NUMBER_WORDS = {
+    "once": "1",
+    "twice": "2",
+    "one": "1",
+    "two": "2",
+    "three": "3",
+    "four": "4",
+    "five": "5",
+    "six": "6",
+    "seven": "7",
+    "eight": "8",
+    "nine": "9",
+    "ten": "10",
+    "eleven": "11",
+    "twelve": "12",
+    "thirteen": "13",
+    "fourteen": "14",
+    "fifteen": "15",
+    "sixteen": "16",
+    "seventeen": "17",
+    "eighteen": "18",
+    "nineteen": "19",
+    "twenty": "20",
+    "dozen": "12",
+    "dozens": "24",
+    "hundred": "100",
+    "hundreds": "200",
+}
+WORDS = re.compile(r"\b(" + "|".join(NUMBER_WORDS) + r")\b", re.IGNORECASE)
+
+ACCUSING = re.compile(
+    r"\b(violat\w*|snoop\w*|breach\w*|unauthori[sz]ed|inappropriat\w*|improper\w*|illegal\w*|unlawful\w*"
+    r"|guilt\w*|misconduct|wrongdoing|fired|firing|disciplin\w*|culprit\w*|criminal\w*|suspicious\w*"
+    r"|abus\w*|prying|nosy|spying|spied|offen[cs]e\w*|punish\w*|sanction\w*)\b",
+    re.IGNORECASE,
+)
+CLINICAL = re.compile(
+    r"\b(diagnos\w*|disease\w*|illness\w*|conditions?|symptom\w*|cancer\w*|tumou?r\w*|diabet\w*|hiv|aids"
+    r"|hepatitis|pregnan\w*|abortion\w*|depress\w*|anxiety|psychiatr\w*|mental health|addiction\w*"
+    r"|overdos\w*|opioid\w*|insulin|metformin|lisinopril|statins?|antibiotic\w*|chemotherapy|prescri\w*"
+    r"|doses?|dosage\w*|blood pressure|cholesterol|glucose|a1c|biops\w*|x-rays?|mri|surger\w*|infection\w*"
+    r"|std|sti|hba1c|therapy|treatment\w*)\b",
+    re.IGNORECASE,
+)
+
+
+def _tokens(text: str) -> set[str]:
+    return set(TOKENS.findall(text))
+
+
+def _sentence(sentence: Sentence, where: str, facts: list[str]) -> list[Problem]:
+    problems: list[Problem] = []
+    bad = [n for n in sentence.facts if not 1 <= n <= len(facts)]
+    if not sentence.facts:
+        problems.append(Problem(Check.CITES_NO_FACT, sentence.text, where))
+    elif bad:
+        problems.append(Problem(Check.CITES_NO_FACT, f"fact {bad[0]}", where))
+    else:
+        cited: set[str] = set()
+        for n in sentence.facts:
+            cited |= _tokens(facts[n - 1])
+        for token in TOKENS.findall(sentence.text):
+            if token not in cited:
+                problems.append(Problem(Check.NOT_IN_FACTS, token, where))
+                break
+        else:
+            for word in WORDS.findall(sentence.text):
+                if NUMBER_WORDS[word.lower()] not in cited:
+                    problems.append(Problem(Check.NOT_IN_FACTS, word, where))
+                    break
+    accusing = ACCUSING.search(sentence.text)
+    if accusing:
+        problems.append(Problem(Check.ACCUSES, accusing.group(0).lower(), where))
+    clinical = CLINICAL.search(sentence.text)
+    if clinical:
+        problems.append(Problem(Check.CLINICAL, clinical.group(0).lower(), where))
+    return problems
+
+
+def check(summary: Summary, facts: list[str]) -> list[Problem]:
+    """Every problem with `summary` against the case's numbered `facts` (fact 1 is `facts[0]`)."""
+    problems: list[Problem] = []
+    for n, sentence in enumerate(summary.summary, start=1):
+        problems += _sentence(sentence, f"summary sentence {n}", facts)
+    for n, sentence in enumerate(summary.to_check, start=1):
+        problems += _sentence(sentence, f"to check {n}", facts)
+    words = sum(len(s.text.split()) for s in [*summary.summary, *summary.to_check])
+    if words > MAX_WORDS:
+        problems.append(Problem(Check.TOO_LONG, f"{words} words", "the summary"))
+    return problems
