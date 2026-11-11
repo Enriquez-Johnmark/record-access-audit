@@ -190,14 +190,18 @@ def report_markdown(made: MadeUp, rules: RuleSet, model: Summariser) -> str:
         "",
         "On the first recorded run, 29 of 34 passed. Three of the five blocked named the case's own patient in a"
         " sentence citing a fact without that ID; the check now lets a summary name its own case's staff member"
-        ' and patient, with a test. The two still blocked are listed below: one counts rules itself ("Two rules'
-        ' raised the case"), which the instructions forbid; one uses "two" for two people, a false alarm the'
-        " check keeps because it can't tell the two uses apart.",
+        " and patient, with a test.",
         "",
     ]
     failures = [r for r in summaries if r.status != "shown"]
     if failures:
-        lines += ["| Case | Status | Problems |", "|---|---|---|"]
+        lines += [
+            'Each summary still blocked, with what the checks found. A number word such as "two" must match a'
+            " number in the cited facts, whether it counts something or not: the check can't tell the uses apart.",
+            "",
+            "| Case | Status | Problems |",
+            "|---|---|---|",
+        ]
         lines += [f"| {r.case} | {r.status} | {'; '.join(r.problems)} |" for r in failures]
     else:
         lines.append("Every summary passed.")

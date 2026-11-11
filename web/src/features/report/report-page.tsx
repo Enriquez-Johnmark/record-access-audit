@@ -27,6 +27,9 @@ export function ReportPage() {
     queryKey: reportKeys.mine(),
     queryFn: () => api<AccessReport>("GET", "/api/report"),
     enabled: me.data?.who === "patient",
+    // Each fetch is logged as the report being viewed, so not again on every return to the window.
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000,
   })
   if (me.error instanceof ApiError && me.error.isNotLoggedIn)
     return <Navigate to="/login" replace />

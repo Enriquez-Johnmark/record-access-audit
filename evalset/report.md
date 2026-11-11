@@ -38,7 +38,9 @@ Made by `record-access-audit measure` from the made-up log (`evalset/labels.json
 
 Claude (claude-sonnet-5-5) wrote a summary of every case from its numbered facts; recorded once with the owner's key and replayed here. **32 of 34 (94%) pass every check.**
 
-On the first recorded run, 29 of 34 passed. Three of the five blocked named the case's own patient in a sentence citing a fact without that ID; the check now lets a summary name its own case's staff member and patient, with a test. The two still blocked are listed below: one counts rules itself ("Two rules raised the case"), which the instructions forbid; one uses "two" for two people, a false alarm the check keeps because it can't tell the two uses apart.
+On the first recorded run, 29 of 34 passed. Three of the five blocked named the case's own patient in a sentence citing a fact without that ID; the check now lets a summary name its own case's staff member and patient, with a test.
+
+Each summary still blocked, with what the checks found. A number word such as "two" must match a number in the cited facts, whether it counts something or not: the check can't tell the uses apart.
 
 | Case | Status | Problems |
 |---|---|---|

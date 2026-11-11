@@ -55,6 +55,7 @@ const actions: Record<string, string> = {
   "summary.failed": "Summary failed",
   "case.viewed": "Case opened",
   "decision.recorded": "Decision recorded",
+  "report.viewed": "Patient viewed their report",
   "rule_set.created": "Rules installed",
   "rule_set.changed": "Rules changed",
   login: "Logged in",

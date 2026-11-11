@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Protocol
 from pydantic import ValidationError
 
 from record_access_audit.core.summary import Summary
-from record_access_audit.model.request import SummaryRequest
+from record_access_audit.model.request import MODEL, SummaryRequest
 
 if TYPE_CHECKING:
     import anthropic
@@ -98,7 +98,7 @@ class RecordedSummariser:
         self.model = model
 
     @classmethod
-    def from_file(cls, file: Path = RECORDINGS, model: str = "claude-sonnet-5-5") -> "RecordedSummariser":
+    def from_file(cls, file: Path = RECORDINGS, model: str = MODEL) -> "RecordedSummariser":
         return cls(load_recordings(file), model)
 
     def answer(self, request: SummaryRequest) -> str:
