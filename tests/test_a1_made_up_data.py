@@ -64,3 +64,17 @@ def test_a1_every_label_names_people_and_accesses_in_the_log() -> None:
 def test_a1_the_committed_labels_are_the_generated_ones() -> None:
     committed = json.loads((ROOT / "evalset" / "labels.json").read_text())
     assert committed == labels_json(generate().labels)
+
+
+def test_a1_a_chart_opened_after_a_patients_death_is_always_a_labelled_case() -> None:
+    made = generate()
+    died = {p.id: p.deceased_at for p in made.clinic.patients if p.deceased_at is not None}
+    labelled = {(label.staff, label.patient, label.day) for label in made.labels}
+    after_death = [
+        a
+        for a in made.clinic.accesses
+        if a.kind.value == "chart opened" and a.patients[0] in died and a.at > died[a.patients[0]]  # type: ignore[operator]
+    ]
+    assert after_death
+    unlabelled = [a.id for a in after_death if (a.staff, a.patients[0], a.at.date()) not in labelled]
+    assert unlabelled == []

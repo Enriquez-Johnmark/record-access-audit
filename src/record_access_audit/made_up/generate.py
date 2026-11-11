@@ -644,7 +644,8 @@ class _Builder:
         index = next(i for i, p in enumerate(self.patients) if p.id == patient)
         old = self.patients[index]
         self.patients[index] = Patient(old.id, old.given, old.family, old.birth_date, old.address, at)
-        # No visits or bookings after death.
+        # Off every care team's panel, and no visits or bookings after death.
+        self.team[patient] = []
         self.encounters = [e for e in self.encounters if not (e.patient == patient and e.start > at)]
         self.appointments = [a for a in self.appointments if not (a.patient == patient and a.start > at)]
         # Charts are not opened after death; a search may still list the patient.
