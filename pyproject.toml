@@ -27,6 +27,7 @@ dev = [
 
 [project.scripts]
 record-access-audit = "record_access_audit.cli:main"
+check-made-up = "record_access_audit.made_up.check:main"
 
 [tool.ruff]
 line-length = 110

@@ -68,4 +68,4 @@ The useful product is not "AI catches snoopers". It is: the clinic's rules, open
 
 ## Not in the first version
 
-Machine-learning detection, automatic messages to staff, HR, patients or regulators, a breach risk-assessment workflow, real record-system connectors (Epic, syslog/ATNA), several clinics, and an employee self-audit page.
+Machine-learning detection, automatic messages to staff, HR, patients or regulators, a breach risk-assessment workflow, connectors to real record systems (vendors' exports, syslog/ATNA), several clinics, and an employee self-audit page.

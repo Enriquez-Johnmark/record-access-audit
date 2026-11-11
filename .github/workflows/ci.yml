@@ -42,3 +42,5 @@ jobs:
       - name: Wait for HAPI FHIR
         run: for _ in $(seq 1 90); do curl -sf "$FHIR_URL/metadata" >/dev/null && break; sleep 2; done
       - run: uv run pytest --junitxml=test-results.xml
+      # A3: no real company outside the research, and every FHIR file marked as test data.
+      - run: uv run check-made-up
