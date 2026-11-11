@@ -1,6 +1,7 @@
 """Storing the clinic read from its FHIR server, so the rules, the facts and
-the patient report never call the server mid-request. Saving again adds only
-what is new; nothing already stored is changed."""
+the patient report never call the server mid-request. Saving again brings
+staff, patients and care up to date (a care team ends, a patient dies); the
+access log only grows: an access already stored is never changed."""
 
 from typing import Any, cast
 from zoneinfo import ZoneInfo
@@ -30,7 +31,10 @@ def save_clinic(db: Db, clinic: Clinic) -> int:
     """Stores everything not yet stored; returns how many new accesses."""
     with transaction(db), db.cursor() as cur:
         cur.executemany(
-            "insert into staff values (%s, %s, %s, %s, %s, %s, %s, %s) on conflict do nothing",
+            "insert into staff values (%s, %s, %s, %s, %s, %s, %s, %s) on conflict (id) do update set"
+            " given = excluded.given, family = excluded.family, role = excluded.role,"
+            " department = excluded.department, address_line = excluded.address_line,"
+            " city = excluded.city, postal_code = excluded.postal_code",
             [
                 (
                     s.id,
@@ -46,7 +50,10 @@ def save_clinic(db: Db, clinic: Clinic) -> int:
             ],
         )
         cur.executemany(
-            "insert into patients values (%s, %s, %s, %s, %s, %s, %s, %s) on conflict do nothing",
+            "insert into patients values (%s, %s, %s, %s, %s, %s, %s, %s) on conflict (id) do update set"
+            " given = excluded.given, family = excluded.family, birth_date = excluded.birth_date,"
+            " address_line = excluded.address_line, city = excluded.city,"
+            " postal_code = excluded.postal_code, deceased_at = excluded.deceased_at",
             [
                 (
                     p.id,
@@ -62,15 +69,20 @@ def save_clinic(db: Db, clinic: Clinic) -> int:
             ],
         )
         cur.executemany(
-            "insert into care_team_members values (%s, %s, %s, %s) on conflict do nothing",
+            "insert into care_team_members values (%s, %s, %s, %s)"
+            " on conflict (patient, staff, start_at) do update set end_at = excluded.end_at",
             [(m.patient, m.staff, m.start, m.end) for m in clinic.care_teams],
         )
         cur.executemany(
-            "insert into encounters values (%s, %s, %s, %s, %s) on conflict do nothing",
+            "insert into encounters values (%s, %s, %s, %s, %s) on conflict (id) do update set"
+            " patient = excluded.patient, staff = excluded.staff, start_at = excluded.start_at,"
+            " end_at = excluded.end_at",
             [(e.id, e.patient, list(e.staff), e.start, e.end) for e in clinic.encounters],
         )
         cur.executemany(
-            "insert into appointments values (%s, %s, %s, %s, %s) on conflict do nothing",
+            "insert into appointments values (%s, %s, %s, %s, %s) on conflict (id) do update set"
+            " patient = excluded.patient, staff = excluded.staff, start_at = excluded.start_at,"
+            " end_at = excluded.end_at",
             [(a.id, a.patient, a.staff, a.start, a.end) for a in clinic.appointments],
         )
         before = _count(db, "accesses")
