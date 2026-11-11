@@ -51,7 +51,7 @@ export function CasePage() {
             ? `${c.staff.name} opened ${c.patient.name}'s record`
             : `${c.staff.name}'s charts on one day`
         }
-        description={`${c.staff.name} is a ${c.staff.role} in ${c.staff.department}. Everyone here is made up.`}
+        description={`${c.staff.name}: ${c.staff.role}, ${c.staff.department}. Everyone here is made up.`}
       >
         <Status tone={c.status === "open" ? "default" : status.variant}>
           {c.status === "open"

@@ -2,9 +2,15 @@
 
 Helps a clinic's privacy officer find and review inappropriate looks at patients' records. Code reads the record system's access log, sets aside every look the clinic's own data explains, and flags what is left when one of the clinic's rules fires. Claude explains each flagged case in plain words from numbered facts, code checks the explanation, and the privacy officer decides, with a written reason. Every step is in an append-only audit log.
 
-**Status:** built to M5 (data and FHIR; flagging; summaries; decisions and pages; the patient report and measurement), with all 34 acceptance criteria proven ([the evidence page](docs/evidence/m5.html)); the showcase (M6) is next. See [`AGENTS.md`](AGENTS.md) for the phases and [`docs/architecture.md`](docs/architecture.md) for the build order.
+**Status:** built (M1–M6: data and FHIR; flagging; summaries; decisions and pages; the patient report and measurement; the showcase), with all 34 acceptance criteria proven ([the evidence page](docs/evidence/m5.html)). See [`AGENTS.md`](AGENTS.md) for the phases and [`docs/architecture.md`](docs/architecture.md) for the build order.
 
 The fourth of four healthcare projects, after [Lab Report Assistant](https://github.com/Enriquez-Johnmark/lab-report-assistant), [Care Reminders](https://github.com/Enriquez-Johnmark/care-reminders) and [Care Message Assistant](https://github.com/Enriquez-Johnmark/care-message-assistant). Made-up clinic, made-up staff and patients: this repository contains no real patient data and names no real company outside its research notes.
+
+## See it
+
+A captioned walkthrough (1 min 37 s), from reading the access log to a patient's own report: [`docs/showcase/walkthrough.mp4`](docs/showcase/walkthrough.mp4). Screenshots and how to make them again: [`docs/showcase/`](docs/showcase/README.md).
+
+![A case: the charts opened, why it was flagged, the numbered facts and Claude's summary citing them](docs/showcase/desktop-3-case.png)
 
 ## Why
 

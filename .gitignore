@@ -10,3 +10,4 @@ test-results.*
 evidence.html
 test-results.xml
 server.log
+showcase-server.log

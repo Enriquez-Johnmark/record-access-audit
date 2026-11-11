@@ -80,6 +80,6 @@ Read only through an injected `Clock`; ruff bans `datetime.now`, `datetime.utcno
 | M3 | Summaries: the facts, the model client, recorded answers, the checks, the 30 bad summaries | A2, C1–C4, D1–D6, I2 | done (2026-11-11) |
 | M4 | Logins, decisions, the rules page and the activity log, with the privacy officer's pages | B6, E1–E4, G1–G3, H1 | done (2026-11-11) |
 | M5 | The patient access report and measurement: Claude's recorded summaries, the report | A4, I3 | done (2026-11-11) |
-| M6 | Showcase: README, screenshots, walkthrough video, portfolio page | none | planned |
+| M6 | Showcase: README, screenshots, walkthrough video, portfolio page | none | done (2026-11-11, `docs/showcase/`) |
 
 Each milestone ends with a code review and an evidence page.
